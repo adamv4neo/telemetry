@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>URBAN DRIVER | Share Location</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- MQTT -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.0.0/mqtt.min.js"></script>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a1a2f, #0e1a2b);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(0,168,255,0.1);
+            border-bottom: 3px solid #00a8ff;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header i {
+            font-size: 36px;
+            color: #00a8ff;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+        }
+        
+        .header p {
+            color: #a0b8cc;
+            font-size: 14px;
+        }
+        
+        .card {
+            background: rgba(16, 26, 46, 0.9);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,168,255,0.3);
+        }
+        
+        .status-card {
+            background: rgba(0,168,255,0.15);
+            border-left: 6px solid #00a8ff;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #00a8ff, #0066ff);
+            border: none;
+            color: white;
+            padding: 18px 30px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            margin: 15px 0;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(0,168,255,0.5);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn.off {
+            background: linear-gradient(45deg, #ff4d4d, #cc0000);
+        }
+        
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 15px;
+            margin: 15px 0;
+            border: 2px solid #00a8ff;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .info-label {
+            color: #a0b8cc;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00a8ff;
+        }
+        
+        .connection-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            background: rgba(255,170,0,0.15);
+            color: #ffaa00;
+        }
+        
+        .connection-badge.connected {
+            background: rgba(0,255,136,0.15);
+            color: #00ff88;
+        }
+        
+        .gps-warning {
+            background: rgba(255,170,0,0.2);
+            border-left: 6px solid #ffaa00;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        
+        .gps-warning i {
+            color: #ffaa00;
+            margin-right: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #a0b8cc;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 { font-size: 20px; }
+            .btn { padding: 15px; font-size: 16px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <i class="fas fa-car"></i>
+        <div>
+            <h1>URBAN DRIVER</h1>
+            <p><i class="fas fa-calendar"></i> Daily Driver • Share Live Location</p>
+        </div>
+    </div>
+    
+    <div class="card status-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <i class="fas fa-satellite-dish" style="color: #00a8ff; margin-right: 10px;"></i>
+                <span>MQTT Status</span>
+            </div>
+            <span id="mqttStatus" class="connection-badge">📡 Connecting...</span>
+        </div>
+    </div>
+    
+    <div class="gps-warning" id="gpsWarning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="warningMessage">Mengakses GPS, tunggu sinyal...</span>
+    </div>
+    
+    <div class="card">
+        <h3 style="margin-bottom: 15px; display: flex; gap: 10px;">
+            <i class="fas fa-map-marked-alt" style="color: #00a8ff;"></i>
+            Posisi Anda Saat Ini
+        </h3>
+        
+        <div id="map"></div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-map-pin"></i> Latitude</div>
+                <div class="info-value" id="latValue">-6.2088</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-map-pin"></i> Longitude</div>
+                <div class="info-value" id="lngValue">106.8456</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-crosshairs"></i> Akurasi</div>
+                <div class="info-value" id="accValue">5 m</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label"><i class="fas fa-tachometer-alt"></i> Kecepatan</div>
+                <div class="info-value" id="speedValue">0 km/h</div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="btn" id="shareBtn">
+        <i class="fas fa-play"></i> 
+        <span id="btnText">MULAI SHARE LOKASI</span>
+    </button>
+    
+    <div class="card" id="statusCard" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="background: rgba(0,255,136,0.2); padding: 12px; border-radius: 50%;">
+                <i class="fas fa-check-circle" style="color: #00ff88; font-size: 24px;"></i>
+            </div>
+            <div>
+                <h3 style="color: #00ff88;">LOKASI TERKIRIM!</h3>
+                <p style="color: #a0b8cc;">Dashboard Urban menerima update setiap 3 detik</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <i class="fas fa-gem" style="color: #00a8ff;"></i>
+        <p style="margin-top: 10px;">NO PRESSURE NO DIAMOND • URBAN DIVISION</p>
+        <p style="margin-top: 5px;">Lokasi dikirim real-time via MQTT • Tanpa Database</p>
+    </div>
+
+    <script>
+        // ========== KONFIGURASI MQTT ==========
+        const BROKER = 'wss://broker.emqx.io:8084/mqtt';
+        const TOPIC = 'location/urban/coordinates';
+        
+        const client = mqtt.connect(BROKER, {
+            clientId: 'urban_driver_' + Math.random().toString(16).substring(2, 8),
+            clean: true,
+            reconnectPeriod: 3000
+        });
+        
+        // ========== VARIABEL GLOBAL ==========
+        let map, marker, circle;
+        let isSharing = false;
+        let watchId = null;
+        let intervalId = null;
+        
+        // ========== INISIALISASI MAP ==========
+        function initMap(lat = -6.2088, lng = 106.8456) {
+            map = L.map('map').setView([lat, lng], 16);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            
+            // Custom car icon
+            const carIcon = L.divIcon({
+                html: '<i class="fas fa-car" style="font-size: 32px; color: #00a8ff; text-shadow: 0 0 20px rgba(0,168,255,0.8);"></i>',
+                className: 'car-icon',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+            
+            marker = L.marker([lat, lng], { icon: carIcon }).addTo(map);
+            
+            circle = L.circle([lat, lng], {
+                radius: 20,
+                color: '#00a8ff',
+                weight: 2,
+                opacity: 0.4,
+                fillColor: '#00a8ff',
+                fillOpacity: 0.1
+            }).addTo(map);
+        }
+        
+        // ========== UPDATE POSISI DI MAP ==========
+        function updatePosition(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            const speed = position.coords.speed || 0;
+            
+            console.log('📍 GPS Fix:', { lat, lng, accuracy, speed });
+            
+            // Update map
+            marker.setLatLng([lat, lng]);
+            circle.setLatLng([lat, lng]);
+            circle.setRadius(accuracy);
+            map.setView([lat, lng], 18);
+            
+            // Update UI
+            document.getElementById('latValue').innerHTML = lat.toFixed(6);
+            document.getElementById('lngValue').innerHTML = lng.toFixed(6);
+            document.getElementById('accValue').innerHTML = Math.round(accuracy) + ' m';
+            document.getElementById('speedValue').innerHTML = Math.round(speed * 3.6) + ' km/h';
+            
+            // Kirim ke MQTT jika sedang sharing
+            if (isSharing) {
+                const gpsData = {
+                    lat: lat,
+                    lng: lng,
+                    accuracy: Math.round(accuracy),
+                    speed: Math.round(speed * 3.6),
+                    timestamp: Date.now()
+                };
+                
+                const payload = JSON.stringify(gpsData);
+                client.publish(TOPIC, payload);
+                console.log('📤 GPS terkirim:', gpsData);
+                
+                // Sembunyikan warning jika sukses
+                document.getElementById('gpsWarning').style.display = 'none';
+            }
+        }
+        
+        // ========== HANDLE ERROR GPS ==========
+        function handleError(error) {
+            console.error('❌ GPS Error:', error);
+            
+            let message = '';
+            if (error.code === 1) {
+                message = 'IZIN DITOLAK! Buka pengaturan browser → izinkan lokasi';
+            } else if (error.code === 2) {
+                message = 'Sinyal GPS tidak tersedia. Keluar ruangan!';
+            } else if (error.code === 3) {
+                message = 'Timeout. Pastikan GPS AKTIF dan Anda di luar ruangan';
+            }
+            
+            document.getElementById('warningMessage').innerHTML = message;
+            document.getElementById('gpsWarning').style.display = 'block';
+        }
+        
+        // ========== MULAI SHARE LOKASI ==========
+        function startSharing() {
+            if (!navigator.geolocation) {
+                alert('Browser tidak mendukung GPS');
+                return;
+            }
+            
+            isSharing = true;
+            
+            // Update UI
+            document.getElementById('shareBtn').classList.add('off');
+            document.getElementById('btnText').innerHTML = 'STOP SHARE LOKASI';
+            document.getElementById('shareBtn').innerHTML = '<i class="fas fa-stop"></i> STOP SHARE LOKASI';
+            document.getElementById('statusCard').style.display = 'block';
+            document.getElementById('gpsWarning').style.display = 'block';
+            document.getElementById('warningMessage').innerHTML = 'Mencari sinyal GPS. Pastikan Anda di luar ruangan...';
+            
+            // 🔴 PERBAIKAN 1: Cek izin lokasi
+            if (navigator.permissions) {
+                navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+                    if (result.state === 'denied') {
+                        alert('⚠️ IZIN LOKASI DITOLAK!\n\nBuka Pengaturan HP → Aplikasi → Browser → Izin → Lokasi → IZINKAN');
+                        stopSharing();
+                        return;
+                    }
+                });
+            }
+            
+            // 🔴 PERBAIKAN 2: Ambil lokasi pertama dengan timeout panjang
+            navigator.geolocation.getCurrentPosition(
+                // Sukses
+                function(position) {
+                    updatePosition(position);
+                    
+                    // Mulai watchPosition
+                    watchId = navigator.geolocation.watchPosition(updatePosition, handleError, {
+                        enableHighAccuracy: true,
+                        maximumAge: 10000,
+                        timeout: 30000  // ⏱️ 30 detik timeout!
+                    });
+                    
+                    // Kirim ulang tiap 3 detik
+                    intervalId = setInterval(() => {
+                        if (isSharing) {
+                            navigator.geolocation.getCurrentPosition(updatePosition, null, {
+                                enableHighAccuracy: true,
+                                timeout: 10000,
+                                maximumAge: 5000
+                            });
+                        }
+                    }, 3000);
+                },
+                // Error
+                function(error) {
+                    handleError(error);
+                    stopSharing();
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 30000,  // ⏱️ 30 detik timeout!
+                    maximumAge: 0
+                }
+            );
+        }
+        
+        // ========== STOP SHARE LOKASI ==========
+        function stopSharing() {
+            isSharing = false;
+            
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            if (intervalId !== null) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            
+            // Update UI
+            document.getElementById('shareBtn').classList.remove('off');
+            document.getElementById('btnText').innerHTML = 'MULAI SHARE LOKASI';
+            document.getElementById('shareBtn').innerHTML = '<i class="fas fa-play"></i> MULAI SHARE LOKASI';
+            document.getElementById('statusCard').style.display = 'none';
+            document.getElementById('gpsWarning').style.display = 'none';
+        }
+        
+        // ========== MQTT HANDLER ==========
+        client.on('connect', () => {
+            console.log('✅ Connected to MQTT Broker');
+            document.getElementById('mqttStatus').innerHTML = '✅ Connected';
+            document.getElementById('mqttStatus').classList.add('connected');
+        });
+        
+        client.on('disconnect', () => {
+            console.log('❌ Disconnected from MQTT');
+            document.getElementById('mqttStatus').innerHTML = '📡 Disconnected';
+            document.getElementById('mqttStatus').classList.remove('connected');
+        });
+        
+        client.on('error', (err) => {
+            console.error('❌ MQTT Error:', err);
+        });
+        
+        // ========== EVENT LISTENER ==========
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            if (isSharing) {
+                stopSharing();
+            } else {
+                startSharing();
+            }
+        });
+        
+        // ========== INITIALIZATION ==========
+        initMap();
+        
+        // Cek GPS sekali di awal
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(updatePosition, handleError, {
+                enableHighAccuracy: true,
+                timeout: 30000,
+                maximumAge: 0
+            });
+        }
+        
+        // Cleanup saat page ditutup
+        window.addEventListener('beforeunload', function() {
+            if (isSharing) {
+                stopSharing();
+            }
+        });
+    </script>
+</body>
+</html>
