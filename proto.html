@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-    <title>KUMBOLO EVO 3</title>
+    <title>KUMBOLO EVO 3 - ELEVATION API</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.0.0/mqtt.min.js"></script>
@@ -864,7 +864,7 @@
             </div>
         </div>
 
-        <!-- GAUGE CARDS: 6 metrics (with ALTITUDE) -->
+        <!-- GAUGE CARDS: 6 metrics (dengan ALTITUDE dari Open-Elevation) -->
         <div class="gauge-section">
             <div class="section-label"><i class="fas fa-gauge-high" style="color:var(--amber)"></i> SENSOR READINGS</div>
             <div class="gauge-grid">
@@ -949,7 +949,7 @@
                     </div>
                 </div>
                 
-                <!-- ALTITUDE - Card baru -->
+                <!-- ALTITUDE - Card (diisi dari Open-Elevation API) -->
                 <div class="gauge-card altitude-card" id="altitudeCard">
                     <div class="gauge-label">
                         <span>ALTITUDE</span>
@@ -1067,8 +1067,8 @@
 
             </div>
 
-            <!-- ALTITUDE SECTION - Card baru -->
-            <div class="section-label" style="margin-top:20px;"><i class="fas fa-mountain" style="color:#44ccff"></i> ALTITUDE TRACKING</div>
+            <!-- ALTITUDE SECTION - Card (menggunakan Open-Elevation) -->
+            <div class="section-label" style="margin-top:20px;"><i class="fas fa-mountain" style="color:#44ccff"></i> ALTITUDE TRACKING (OPEN-ELEVATION)</div>
             <div class="temp-row">
 
                 <!-- Card 1: Altitude angka -->
@@ -1082,7 +1082,7 @@
                     </div>
                     <div class="altitude-status-badge" id="altitudeStatusBadge">
                         <i class="fas fa-circle" style="font-size:7px;"></i>
-                        MENUNGGU DATA
+                        MENUNGGU GPS
                     </div>
                 </div>
 
@@ -1194,7 +1194,26 @@
             isMapInitialized = true;
         }
 
+        // Fungsi untuk mengambil altitude dari Open-Elevation API
+        async function fetchAltitudeFromAPI(lat, lng) {
+            const url = `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.results && data.results.length > 0) {
+                    const elevation = data.results[0].elevation;
+                    // Elevation bisa null jika laut? API biasanya return 0 untuk laut.
+                    updateAltitude(Math.round(elevation));
+                } else {
+                    console.warn('No elevation data for', lat, lng);
+                }
+            } catch (error) {
+                console.error('Elevation API error:', error);
+            }
+        }
+
         function updateLocation(lat, lng, accuracy = 25, speed = 0) {
+            // hindari update jika koordinat sama persis
             if (lastLocation &&
                 lastLocation.lat === lat &&
                 lastLocation.lng === lng) return;
@@ -1221,6 +1240,10 @@
 
                 document.getElementById('driverStatus').innerHTML =
                     `<i class="fas fa-circle" style="color:var(--green);font-size:8px;"></i> Driver Online${speed > 0 ? ' · ' + Math.round(speed) + ' km/h' : ''}`;
+
+                // Setelah koordinat diperbarui, panggil API Open-Elevation untuk mendapatkan altitude
+                fetchAltitudeFromAPI(lat, lng);
+
             } catch (e) {
                 console.error('Map update error:', e);
             }
@@ -1441,9 +1464,8 @@
 
         let maxSpeed = 0;
         let maxRpm   = 0;
-        let maxAltitude = 0; 
+        // tidak perlu maxAltitude karena sudah otomatis dari altitude card
 
-     
         function setGaugeReady(el) {
             el.classList.remove('no-data');
         }
@@ -1498,7 +1520,6 @@
             document.getElementById('afrValue').textContent = vStr;
             document.getElementById('afrBar').style.width = Math.min(100, ((v - 10) / 10) * 100) + '%';
 
-            
             const el = document.getElementById('afrValue');
             const badge = document.getElementById('afrBadge');
 
@@ -1541,17 +1562,14 @@
         function updateTemp(val) {
             const v = parseInt(val) || 0;
 
-            
             setGaugeReady(document.getElementById('tempValue'));
             document.getElementById('tempValue').textContent = v;
             document.getElementById('tempBar').style.width = Math.min(100, (v / 120) * 100) + '%';
 
-            
             document.getElementById('tempBigValue').textContent = v;
             const tempCard = document.getElementById('tempNumberCard');
             tempCard.style.setProperty('--temp-fill', Math.min(100, (v / 120) * 100) + '%');
 
-            
             const badge = document.getElementById('tempBadge');
             const statusBadge = document.getElementById('tempStatusBadge');
 
@@ -1590,26 +1608,22 @@
             tempChart.update('none');
         }
 
-       
+        // Fungsi updateAltitude: dipanggil dari API elevation
         function updateAltitude(val) {
             const v = parseInt(val) || 0;
             
-           
+            // Set nilai di gauge card kecil
             setGaugeReady(document.getElementById('altitudeValue'));
             document.getElementById('altitudeValue').textContent = v;
             
-            
+            // Bar altitude (asumsi max 3000m untuk skala)
             const barWidth = Math.min(100, (v / 3000) * 100);
             document.getElementById('altitudeBar').style.width = barWidth + '%';
             
-          
+            // Nilai besar di altitude number card
             document.getElementById('altitudeBigValue').textContent = v;
-          
-            if (v > maxAltitude) {
-                maxAltitude = v;
-            }
             
-            
+            // Badge status
             const badge = document.getElementById('altitudeBadge');
             const statusBadge = document.getElementById('altitudeStatusBadge');
             
@@ -1635,7 +1649,7 @@
             altitudeChart.update('none');
         }
 
-        
+        // Fungsi untuk log data ke tabel
         function updateSensorLog(data) {
             const tbody = document.getElementById('sensorLog');
             const timeStr = new Date().toLocaleTimeString('id-ID');
@@ -1645,7 +1659,10 @@
             const afr   = data.afr_etanol != null ? data.afr_etanol.toFixed(1) : '--';
             const tps   = data.throttle ?? '--';
             const temp  = data.suhu ?? '--';
-            const alt   = data.altitude ?? data.ketinggian ?? '--'; 
+            // Ambil altitude dari state terakhir (lastLocation? lebih baik dari nilai yang sudah diupdate)
+            // Kita ambil dari elemen altitudeValue agar sinkron
+            const altElem = document.getElementById('altitudeValue');
+            const alt = altElem && !altElem.classList.contains('no-data') ? altElem.textContent : '--';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -1665,7 +1682,7 @@
             }
         }
 
-        
+        // MQTT handlers
         client.on('connect', () => {
             console.log('✅ Proto MQTT connected');
             document.getElementById('statusDot').className = 'dot online';
@@ -1711,7 +1728,7 @@
             if (topic === 'semeru/proto/afr')   updateAfr(value);
             if (topic === 'semeru/proto/tps')   updateTps(value);
             if (topic === 'semeru/proto/temp')  updateTemp(value);
-            if (topic === 'semeru/proto/altitude') updateAltitude(value); 
+            // altitude TIDAK diambil dari MQTT lagi, diambil dari API via updateLocation
 
             if (topic === 'semeru/proto/data') {
                 try {
@@ -1725,8 +1742,7 @@
                     if (data.afr_etanol != null) updateAfr(data.afr_etanol);
                     if (data.throttle   != null) updateTps(data.throttle);
                     if (data.suhu       != null) updateTemp(data.suhu);
-                    if (data.altitude   != null) updateAltitude(data.altitude); 
-                    if (data.ketinggian != null) updateAltitude(data.ketinggian); 
+                    // Abaikan altitude dari MQTT, tidak dipakai
                     updateSensorLog(data);
                 } catch {}
             }
