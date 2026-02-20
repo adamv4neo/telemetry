@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROTO DRIVER | Share Location</title>
+    <title>PROTO DRIVER | Share Location + Altitude</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -110,7 +110,7 @@
         
         .info-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-top: 15px;
         }
@@ -120,6 +120,7 @@
             padding: 15px;
             border-radius: 12px;
             text-align: center;
+            border: 1px solid rgba(255,170,0,0.2);
         }
         
         .info-label {
@@ -132,6 +133,23 @@
             font-size: 20px;
             font-weight: bold;
             color: #ffaa00;
+        }
+        
+        /* Khusus untuk altitude card */
+        .info-item.altitude-item {
+            grid-column: span 2;
+            background: linear-gradient(145deg, rgba(68,204,255,0.1), rgba(68,204,255,0.05));
+            border-left: 4px solid #44ccff;
+        }
+        
+        .info-item.altitude-item .info-value {
+            color: #44ccff;
+            font-size: 28px;
+        }
+        
+        .info-item.altitude-item i {
+            color: #44ccff;
+            margin-right: 8px;
         }
         
         .connection-badge {
@@ -169,6 +187,19 @@
             font-size: 12px;
         }
         
+        /* Elevation badge */
+        .elevation-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+            background: rgba(68,204,255,0.2);
+            color: #44ccff;
+            border: 1px solid rgba(68,204,255,0.3);
+        }
+        
         @media (max-width: 480px) {
             .header h1 { font-size: 20px; }
             .btn { padding: 15px; font-size: 16px; }
@@ -180,7 +211,7 @@
         <i class="fas fa-flag-checkered"></i>
         <div>
             <h1>PROTO DRIVER</h1>
-            <p><i class="fas fa-trophy"></i> Racing Division • Share Live Location</p>
+            <p><i class="fas fa-trophy"></i> Racing Division • Share Live Location + Altitude</p>
         </div>
     </div>
     
@@ -202,7 +233,7 @@
     <div class="card">
         <h3 style="margin-bottom: 15px; display: flex; gap: 10px;">
             <i class="fas fa-map-marked-alt" style="color: #ffaa00;"></i>
-            Posisi Anda Saat Ini
+            Posisi & Ketinggian
         </h3>
         
         <div id="map"></div>
@@ -224,6 +255,21 @@
                 <div class="info-label"><i class="fas fa-tachometer-alt"></i> Kecepatan</div>
                 <div class="info-value" id="speedValue">0 km/h</div>
             </div>
+            
+            <!-- ALTITUDE CARD - Menggunakan Open-Elevation API -->
+            <div class="info-item altitude-item">
+                <div class="info-label">
+                    <i class="fas fa-mountain"></i> 
+                    Ketinggian (Open-Elevation)
+                    <span class="elevation-badge" id="altitudeSource">API</span>
+                </div>
+                <div class="info-value" id="altitudeValue">
+                    <i class="fas fa-arrow-up"></i> -- m
+                </div>
+                <div style="font-size: 11px; color: #44ccff; margin-top: 5px;" id="altitudeStatus">
+                    Menunggu koordinat...
+                </div>
+            </div>
         </div>
     </div>
     
@@ -239,7 +285,7 @@
             </div>
             <div>
                 <h3 style="color: #00ff88;">LOKASI TERKIRIM!</h3>
-                <p style="color: #a0b8cc;">Dashboard Proto akan menerima update setiap 2 detik</p>
+                <p style="color: #a0b8cc;">Dashboard akan menerima update lokasi + ketinggian</p>
             </div>
         </div>
     </div>
@@ -247,7 +293,7 @@
     <div class="footer">
         <i class="fas fa-gem" style="color: #ffaa00;"></i>
         <p style="margin-top: 10px;">NO PRESSURE NO DIAMOND • PROTO DIVISION</p>
-        <p style="margin-top: 5px;">Lokasi dikirim real-time via MQTT • Tanpa Database</p>
+        <p style="margin-top: 5px;">Altitude via Open-Elevation API • Update Real-time</p>
     </div>
 
     <script>
@@ -267,6 +313,10 @@
         let watchId = null;
         let intervalId = null;
         let lastLocation = null;
+        
+        // Cache untuk altitude (biar tidak request berulang untuk koordinat sama)
+        let lastAltitudeRequest = null;
+        let lastAltitudeValue = null;
         
         // ========== INISIALISASI MAP ==========
         function initMap(lat = -6.5405, lng = 106.8569) {
@@ -299,8 +349,76 @@
             }
         }
         
+        // ========== FUNGSI AMBIL ALTITUDE DARI OPEN-ELEVATION API ==========
+        async function fetchAltitude(lat, lng) {
+            // Cek cache (hindari request berulang untuk koordinat yang sama)
+            const coordKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+            if (lastAltitudeRequest === coordKey && lastAltitudeValue !== null) {
+                return lastAltitudeValue;
+            }
+            
+            try {
+                const url = `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`;
+                console.log('🌄 Requesting altitude for:', coordKey);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    const elevation = Math.round(data.results[0].elevation);
+                    
+                    // Update cache
+                    lastAltitudeRequest = coordKey;
+                    lastAltitudeValue = elevation;
+                    
+                    console.log(`🏔️ Altitude: ${elevation} m for ${coordKey}`);
+                    
+                    // Update UI
+                    const altValue = document.getElementById('altitudeValue');
+                    const altStatus = document.getElementById('altitudeStatus');
+                    
+                    if (altValue) {
+                        altValue.innerHTML = `<i class="fas fa-arrow-up"></i> ${elevation} m`;
+                    }
+                    
+                    if (altStatus) {
+                        // Klasifikasi ketinggian
+                        if (elevation < 100) {
+                            altStatus.innerHTML = '📍 Dataran rendah';
+                            altStatus.style.color = '#88dd88';
+                        } else if (elevation < 500) {
+                            altStatus.innerHTML = '⛰️ Perbukitan';
+                            altStatus.style.color = '#ffaa00';
+                        } else if (elevation < 1000) {
+                            altStatus.innerHTML = '🏔️ Pegunungan';
+                            altStatus.style.color = '#ff8800';
+                        } else {
+                            altStatus.innerHTML = '🗻 Dataran tinggi (>1000m)';
+                            altStatus.style.color = '#ff5555';
+                        }
+                    }
+                    
+                    return elevation;
+                } else {
+                    console.warn('No altitude data for', lat, lng);
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Elevation API error:', error);
+                
+                // Update UI dengan error
+                const altStatus = document.getElementById('altitudeStatus');
+                if (altStatus) {
+                    altStatus.innerHTML = '⚠️ Gagal ambil data ketinggian';
+                    altStatus.style.color = '#ffaa00';
+                }
+                
+                return null;
+            }
+        }
+        
         // ========== UPDATE POSISI ==========
-        function updatePosition(position) {
+        async function updatePosition(position) {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             const accuracy = position.coords.accuracy;
@@ -326,17 +444,21 @@
             if (accEl) accEl.innerHTML = Math.round(accuracy) + ' m';
             if (speedEl) speedEl.innerHTML = Math.round(speed * 3.6) + ' km/h';
             
+            // 🔥 AMBIL ALTITUDE DARI API
+            const altitude = await fetchAltitude(lat, lng);
+            
             if (isSharing) {
                 const gpsData = {
                     lat: lat,
                     lng: lng,
                     accuracy: Math.round(accuracy),
                     speed: Math.round(speed * 3.6),
+                    altitude: altitude || 0,  // Sertakan altitude dalam data MQTT
                     timestamp: Date.now()
                 };
                 
                 client.publish(TOPIC, JSON.stringify(gpsData));
-                console.log('📤 Proto GPS sent:', gpsData);
+                console.log('📤 Proto GPS + Altitude sent:', gpsData);
                 
                 const warningEl = document.getElementById('gpsWarning');
                 if (warningEl) warningEl.style.display = 'none';
@@ -380,12 +502,21 @@
             const warningEl = document.getElementById('gpsWarning');
             const messageEl = document.getElementById('warningMessage');
             
-            if (shareBtn) shareBtn.classList.add('off');
+            if (shareBtn) {
+                shareBtn.classList.add('off');
+                shareBtn.innerHTML = '<i class="fas fa-stop"></i> STOP SHARE LOKASI';
+            }
             if (btnText) btnText.innerHTML = 'STOP SHARE LOKASI';
-            if (shareBtn) shareBtn.innerHTML = '<i class="fas fa-stop"></i> STOP SHARE LOKASI';
             if (statusCard) statusCard.style.display = 'block';
             if (warningEl) warningEl.style.display = 'block';
             if (messageEl) messageEl.innerHTML = 'Mencari sinyal GPS. Pastikan Anda di luar ruangan...';
+            
+            // Reset altitude status
+            const altStatus = document.getElementById('altitudeStatus');
+            if (altStatus) {
+                altStatus.innerHTML = 'Mendapatkan data ketinggian...';
+                altStatus.style.color = '#44ccff';
+            }
             
             // Cek izin
             if (navigator.permissions) {
@@ -398,10 +529,10 @@
                 });
             }
             
-            // 🔴 PERBAIKAN: AMBIL LOKASI DULU SEBELUM WATCH
+            // Ambil lokasi dulu sebelum watch
             navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    updatePosition(position);
+                async function(position) {
+                    await updatePosition(position);
                     
                     // Baru mulai watch
                     watchId = navigator.geolocation.watchPosition(updatePosition, handleError, {
@@ -422,8 +553,6 @@
                 },
                 function(error) {
                     handleError(error);
-                    // JANGAN panggil stopSharing() di sini! 
-                    // Biarkan user coba lagi manual
                 },
                 {
                     enableHighAccuracy: true,
@@ -447,7 +576,6 @@
                 intervalId = null;
             }
             
-            // 🔴 PERBAIKAN: SAFE CHECK UNTUK SEMUA ELEMENT!
             const shareBtn = document.getElementById('shareBtn');
             const btnText = document.getElementById('btnText');
             const statusCard = document.getElementById('statusCard');
@@ -496,16 +624,13 @@
         // ========== INITIALIZATION ==========
         initMap();
         
-        // 🔴 PERBAIKAN: JANGAN PANGGIL getCurrentPosition OTOMATIS!
-        // Biarkan user klik tombol dulu
-        
         window.addEventListener('beforeunload', function() {
             if (isSharing) {
                 stopSharing();
             }
         });
         
-        console.log('🚗 Proto driver ready');
+        console.log('🚗 Proto driver with Altitude ready');
     </script>
 </body>
 </html>
