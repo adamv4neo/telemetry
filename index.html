@@ -3,164 +3,575 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NO PRESSURE NO DIAMOND</title>
+    <title>SEMERU TEAM</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --blue: #00a8ff;
+            --blue-dim: rgba(0,168,255,0.12);
+            --blue-border: rgba(0,168,255,0.25);
+            --amber: #ffaa00;
+            --amber-dim: rgba(255,170,0,0.12);
+            --amber-border: rgba(255,170,0,0.25);
+            --bg-deep: #070b14;
+            --bg-card: rgba(12, 18, 32, 0.95);
+            --text-muted: #5a7a9a;
+            --text-dim: #8aa4bc;
         }
-        
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            background: linear-gradient(135deg, #0a0f1f, #0e1a2b);
+            background: var(--bg-deep);
             color: white;
             min-height: 100vh;
-            padding: 20px;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
         }
-        
-        .header {
+
+        /* Scanline overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 2px,
+                rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Ambient background glow */
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-glow::before {
+            content: '';
+            position: absolute;
+            top: -200px; left: -200px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(0,168,255,0.05) 0%, transparent 70%);
+        }
+        .bg-glow::after {
+            content: '';
+            position: absolute;
+            bottom: -200px; right: -200px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255,170,0,0.05) 0%, transparent 70%);
+        }
+
+        /* ========== NAVBAR ========== */
+        .navbar {
+            background: rgba(7,11,20,0.98);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--blue), var(--amber));
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+        }
+        .brand-icon i { font-size: 16px; color: #070b14; }
+
+        .brand-text h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 17px; font-weight: 900;
+            letter-spacing: 3px; line-height: 1;
+        }
+        .brand-text span {
+            font-size: 10px; color: var(--text-muted);
+            letter-spacing: 2px; font-weight: 600;
+        }
+
+        .nav-meta {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; font-family: 'Share Tech Mono', monospace;
+            color: var(--text-muted);
+        }
+        .nav-meta i { font-size: 10px; color: var(--amber); }
+
+        /* ========== HERO ========== */
+        .hero {
+            position: relative;
+            z-index: 1;
             text-align: center;
-            padding: 40px 20px;
+            padding: 72px 24px 56px;
         }
-        
-        .logo {
-            font-size: 64px;
-            color: #00a8ff;
-            text-shadow: 0 0 30px rgba(0,168,255,0.5);
-            margin-bottom: 20px;
+
+        .hero-gem {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 28px;
         }
-        
-        h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #00a8ff, #ffaa00);
+
+        .hero-gem i {
+            font-size: 56px;
+            background: linear-gradient(135deg, var(--blue), var(--amber));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 24px rgba(0,168,255,0.4));
+            animation: gem-pulse 3s ease-in-out infinite;
         }
-        
-        .subtitle {
-            color: #a0b8cc;
-            margin-bottom: 40px;
+
+        @keyframes gem-pulse {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(0,168,255,0.3)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255,170,0,0.5)); }
         }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            max-width: 800px;
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(22px, 5vw, 42px);
+            font-weight: 900;
+            letter-spacing: 4px;
+            line-height: 1.1;
+            background: linear-gradient(90deg, var(--blue) 0%, white 50%, var(--amber) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 14px;
+        }
+
+        .hero-sub {
+            font-size: 14px;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .hero-sub span {
+            display: flex; align-items: center; gap: 6px;
+        }
+        .hero-sub i { color: var(--amber); font-size: 11px; }
+
+        .hero-divider {
+            width: 80px; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--amber), transparent);
+            margin: 28px auto 0;
+            border-radius: 1px;
+        }
+
+        .section-label {
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 3px; color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-label::after {
+            content: ''; flex: 1; height: 1px;
+            background: rgba(255,255,255,0.06);
+        }
+
+        .main {
+            position: relative; z-index: 1;
+            max-width: 1100px;
             margin: 0 auto;
+            padding: 0 28px 60px;
         }
-        
+
+        .card-group {
+            margin-bottom: 32px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
         .card {
-            background: rgba(16, 26, 46, 0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px 20px;
-            text-align: center;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 32px 28px;
             cursor: pointer;
-            transition: 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
         }
-        
-        .card:hover {
-            transform: translateY(-5px);
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            transition: opacity 0.3s;
         }
-        
-        .card.urban { border-bottom: 4px solid #00a8ff; }
-        .card.proto { border-bottom: 4px solid #ffaa00; }
-        .card.driver-urban { border-bottom: 4px solid #00a8ff; background: rgba(0,168,255,0.1); }
-        .card.driver-proto { border-bottom: 4px solid #ffaa00; background: rgba(255,170,0,0.1); }
-        
-        .card i {
-            font-size: 48px;
-            margin-bottom: 15px;
+
+        .card::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; right: -40px;
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            opacity: 0.04;
+            transition: opacity 0.3s;
         }
-        
-        .card.urban i { color: #00a8ff; }
-        .card.proto i { color: #ffaa00; }
-        .card.driver-urban i { color: #00a8ff; }
-        .card.driver-proto i { color: #ffaa00; }
-        
-        .card h3 {
-            margin-bottom: 5px;
+
+        .card.urban::before { background: linear-gradient(90deg, var(--blue), transparent); }
+        .card.urban::after { background: var(--blue); }
+        .card.urban:hover {
+            border-color: var(--blue-border);
+            box-shadow: 0 8px 40px rgba(0,168,255,0.12), 0 0 0 1px rgba(0,168,255,0.1);
+            transform: translateY(-4px);
         }
-        
-        .card p {
-            color: #a0b8cc;
-            font-size: 12px;
+        .card.urban:hover::after { opacity: 0.1; }
+
+        .card.proto::before { background: linear-gradient(90deg, var(--amber), transparent); }
+        .card.proto::after { background: var(--amber); }
+        .card.proto:hover {
+            border-color: var(--amber-border);
+            box-shadow: 0 8px 40px rgba(255,170,0,0.12), 0 0 0 1px rgba(255,170,0,0.1);
+            transform: translateY(-4px);
         }
-        
-        .badge {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 5px 15px;
-            border-radius: 20px;
+        .card.proto:hover::after { opacity: 0.1; }
+
+        .card.driver-urban::before { background: linear-gradient(90deg, var(--blue), transparent); }
+        .card.driver-urban::after { background: var(--blue); }
+        .card.driver-urban:hover {
+            border-color: var(--blue-border);
+            box-shadow: 0 8px 32px rgba(0,168,255,0.1);
+            transform: translateY(-4px);
+        }
+
+        .card.driver-proto::before { background: linear-gradient(90deg, var(--amber), transparent); }
+        .card.driver-proto::after { background: var(--amber); }
+        .card.driver-proto:hover {
+            border-color: var(--amber-border);
+            box-shadow: 0 8px 32px rgba(255,170,0,0.1);
+            transform: translateY(-4px);
+        }
+
+        .card-icon-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 52px; height: 52px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+        }
+
+        .urban .card-icon, .driver-urban .card-icon {
+            background: var(--blue-dim);
+            color: var(--blue);
+            border: 1px solid var(--blue-border);
+        }
+
+        .proto .card-icon, .driver-proto .card-icon {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber-border);
+        }
+
+        .card-badge {
+            font-size: 10px; font-weight: 700;
+            letter-spacing: 2px;
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .urban .card-badge, .driver-urban .card-badge {
+            background: var(--blue-dim);
+            color: var(--blue);
+            border: 1px solid var(--blue-border);
+        }
+
+        .proto .card-badge, .driver-proto .card-badge {
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber-border);
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px; font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-footer-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
             font-size: 11px;
-            background: rgba(255,255,255,0.1);
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--text-muted);
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(255,255,255,0.04);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
-        
+        .chip i { font-size: 10px; }
+        .urban .chip i, .driver-urban .chip i { color: var(--blue); }
+        .proto .chip i, .driver-proto .chip i { color: var(--amber); }
+
+        .card-arrow {
+            position: absolute;
+            bottom: 20px; right: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+            opacity: 0;
+            transform: translateX(-6px);
+            transition: all 0.25s;
+        }
+        .card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .urban:hover .card-arrow, .driver-urban:hover .card-arrow { color: var(--blue); }
+        .proto:hover .card-arrow, .driver-proto:hover .card-arrow { color: var(--amber); }
+
+        .driver-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card.driver-urban,
+        .card.driver-proto {
+            padding: 22px 24px;
+            flex-direction: row;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .card.driver-urban .card-icon,
+        .card.driver-proto .card-icon {
+            width: 44px; height: 44px;
+            flex-shrink: 0;
+            font-size: 18px;
+        }
+
+        .driver-card-text { flex: 1; }
+        .driver-card-text .card-title { font-size: 13px; letter-spacing: 1.5px; margin-bottom: 4px; }
+        .driver-card-text .card-desc { font-size: 12px; margin-bottom: 0; }
+
+        .status-bar {
+            position: relative; z-index: 1;
+            background: rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            padding: 10px 40px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 11px; letter-spacing: 1px;
+            color: var(--text-muted); font-weight: 600;
+        }
+        .status-item i { font-size: 10px; color: var(--amber); }
+
         .footer {
+            position: relative; z-index: 1;
             text-align: center;
-            margin-top: 50px;
-            color: #a0b8cc;
-            font-size: 12px;
+            padding: 32px;
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
-        
-        @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; }
-            h1 { font-size: 28px; }
+
+        .footer-gem {
+            font-size: 18px;
+            background: linear-gradient(135deg, var(--blue), var(--amber));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .footer-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .footer-sub {
+            font-size: 11px;
+            color: rgba(90,122,154,0.5);
+            letter-spacing: 0.5px;
+        }
+        @media (max-width: 700px) {
+            .card-grid, .driver-grid { grid-template-columns: 1fr; }
+            .navbar { padding: 12px 20px; }
+            .main { padding: 0 16px 48px; }
+            .status-bar { gap: 20px; padding: 10px 20px; }
+            .card.driver-urban, .card.driver-proto {
+                flex-direction: column; align-items: flex-start; gap: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
+
+    <div class="bg-glow"></div>
+
+    <div class="navbar">
+        <div class="brand">
+            <div class="brand-icon"><i class="fas fa-gem"></i></div>
+            <div class="brand-text">
+                <h2>SEMERU TEAM</h2>
+                <span>STATE UNIVERSITY OF MALANG</span>
+            </div>
+        </div>
+        <div class="nav-meta">
+            <i class="fas fa-circle" style="color:var(--amber);font-size:7px;animation:blink 1.5s infinite"></i>
+            IN ENGINEERING BOYS WE TRUST!
+        </div>
+    </div>
+    <div class="hero">
+        <div class="hero-gem">
             <i class="fas fa-gem"></i>
         </div>
-        <h1>NO PRESSURE NO DIAMOND</h1>
-        <p class="subtitle">Real-time Tracking • MQTT • Tanpa Database</p>
+        <h1>NO PRESSURE<br>NO DIAMOND</h1>
+        <div class="hero-sub">
+            <span><i class="fas fa-car"></i> URBAN</span>
+            <span style="color:rgba(255,255,255,0.15)">·</span>
+            <span><i class="fas fa-flag-checkered"></i> PROTO</span>
+            <span style="color:rgba(255,255,255,0.15)">·</span>
+            <span><i class="fas fa-map-marked-alt"></i> GPS TRACKING</span>
+        </div>
+        <div class="hero-divider"></div>
     </div>
-    
-    <div class="grid">
-        <!-- DASHBOARD URBAN -->
-        <div class="card urban" onclick="window.location.href='urban.html'">
-            <i class="fas fa-car"></i>
-            <h3>URBAN DASHBOARD</h3>
-            <p>Lihat data sensor & map Urban</p>
-            <span class="badge">MONITORING</span>
+
+    <div class="main">
+        <div class="card-group">
+            <div class="section-label">
+                <i class="fas fa-gauge-high" style="color:var(--amber)"></i>
+                MONITORING DASHBOARDS
+            </div>
+            <div class="card-grid">
+                <a class="card urban" href="urban.html">
+                    <div class="card-icon-row">
+                        <div class="card-icon"><i class="fas fa-car"></i></div>
+                        <div class="card-badge">MONITORING</div>
+                    </div>
+                    <div class="card-title">URBAN<br>DASHBOARD</div>
+                    <div class="card-desc">
+                        Pantau data sensor real-time kendaraan Urban — kecepatan, RPM, AFR, throttle, suhu mesin, dan posisi GPS langsung di peta.
+                    </div>
+                    <div class="card-footer-row">
+                        <div class="chip"><i class="fas fa-tachometer-alt"></i> Speed</div>
+                        <div class="chip"><i class="fas fa-circle-notch"></i> RPM</div>
+                        <div class="chip"><i class="fas fa-map-marked-alt"></i> GPS</div>
+                        <div class="chip"><i class="fas fa-temperature-high"></i> Suhu</div>
+                    </div>
+                    <div class="card-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+                <a class="card proto" href="proto.html">
+                    <div class="card-icon-row">
+                        <div class="card-icon"><i class="fas fa-flag-checkered"></i></div>
+                        <div class="card-badge">MONITORING</div>
+                    </div>
+                    <div class="card-title">PROTO<br>DASHBOARD</div>
+                    <div class="card-desc">
+                        Pantau data sensor real-time kendaraan Proto — kecepatan, RPM, AFR, throttle, suhu mesin, dan posisi GPS langsung di peta.
+                    </div>
+                    <div class="card-footer-row">
+                        <div class="chip"><i class="fas fa-tachometer-alt"></i> Speed</div>
+                        <div class="chip"><i class="fas fa-circle-notch"></i> RPM</div>
+                        <div class="chip"><i class="fas fa-map-marked-alt"></i> GPS</div>
+                        <div class="chip"><i class="fas fa-gas-pump"></i> AFR</div>
+                    </div>
+                    <div class="card-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+
+            </div>
         </div>
-        
-        <!-- DASHBOARD PROTO -->
-        <div class="card proto" onclick="window.location.href='proto.html'">
-            <i class="fas fa-flag-checkered"></i>
-            <h3>PROTO DASHBOARD</h3>
-            <p>Lihat data sensor & map Proto</p>
-            <span class="badge">MONITORING</span>
+
+        <div class="card-group">
+            <div class="section-label">
+                <i class="fas fa-location-dot" style="color:var(--text-muted)"></i>
+                DRIVER GPS SHARING
+            </div>
+            <div class="driver-grid">
+
+                <a class="card driver-urban" href="driver-urban.html">
+                    <div class="card-icon"><i class="fas fa-location-dot"></i></div>
+                    <div class="driver-card-text">
+                        <div class="card-title">URBAN DRIVER</div>
+                        <div class="card-desc"></div>
+                    </div>
+                    <div class="card-badge">KIRIM GPS</div>
+                    <div class="card-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+
+                <a class="card driver-proto" href="driver-proto.html">
+                    <div class="card-icon"><i class="fas fa-location-dot"></i></div>
+                    <div class="driver-card-text">
+                        <div class="card-title">PROTO DRIVER</div>
+                        <div class="card-desc"></div>
+                    </div>
+                    <div class="card-badge">KIRIM GPS</div>
+                    <div class="card-arrow"><i class="fas fa-arrow-right"></i></div>
+                </a>
+
+            </div>
         </div>
-        
-        <!-- DRIVER URBAN - SHARE LOCATION -->
-        <div class="card driver-urban" onclick="window.location.href='driver-urban.html'">
-            <i class="fas fa-location-dot"></i>
-            <h3>URBAN DRIVER</h3>
-            <p>Share lokasi Urban ke dashboard</p>
-            <span class="badge">KIRIM GPS</span>
-        </div>
-        
-        <!-- DRIVER PROTO - SHARE LOCATION -->
-        <div class="card driver-proto" onclick="window.location.href='driver-proto.html'">
-            <i class="fas fa-location-dot"></i>
-            <h3>PROTO DRIVER</h3>
-            <p>Share lokasi Proto ke dashboard</p>
-            <span class="badge">KIRIM GPS</span>
-        </div>
+
     </div>
-    
     <div class="footer">
-        <i class="fas fa-gem" style="color: #00a8ff;"></i>
-        <p style="margin-top: 10px;">NO PRESSURE NO DIAMOND</p>
-        <p style="margin-top: 5px;">© 2024 - Real-time GPS via MQTT • Tanpa Database • Tanpa Backend</p>
+        <div class="footer-gem"><i class="fas fa-gem"></i></div>
+        <div class="footer-title">NO PRESSURE NO DIAMOND</div>
+        <div class="footer-sub">© 2024 — Real-time GPS via MQTT · Tanpa Database · Tanpa Backend</div>
     </div>
+
+    <style>
+        @keyframes blink {
+            0%,100%{opacity:1} 50%{opacity:0.2}
+        }
+    </style>
+
 </body>
 </html>
