@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROTO DRIVER | Share Location + Altitude</title>
+    <title>PROTO DRIVER | Share Location + Altitude + Wind</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -135,20 +135,78 @@
             color: #ffaa00;
         }
         
-        /* Khusus untuk altitude card */
-        .info-item.altitude-item {
+        /* Khusus untuk wind card */
+        .info-item.wind-item {
             grid-column: span 2;
-            background: linear-gradient(145deg, rgba(68,204,255,0.1), rgba(68,204,255,0.05));
+            background: linear-gradient(145deg, rgba(68,204,255,0.15), rgba(68,204,255,0.05));
             border-left: 4px solid #44ccff;
+            display: flex;
+            flex-direction: column;
         }
         
-        .info-item.altitude-item .info-value {
+        .info-item.wind-item .info-value {
             color: #44ccff;
             font-size: 28px;
         }
         
-        .info-item.altitude-item i {
+        .info-item.wind-item i {
             color: #44ccff;
+            margin-right: 8px;
+        }
+        
+        .wind-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .wind-compass {
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            border: 3px solid #44ccff;
+            border-radius: 50%;
+            position: relative;
+            background: rgba(68,204,255,0.1);
+        }
+        
+        .wind-compass::before {
+            content: '↑';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(var(--wind-rotate, 0deg));
+            color: #44ccff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .wind-speed-big {
+            font-size: 36px;
+            font-weight: bold;
+            color: #44ccff;
+        }
+        
+        .wind-desc {
+            font-size: 14px;
+            color: #a0b8cc;
+        }
+        
+        /* Khusus untuk altitude card */
+        .info-item.altitude-item {
+            grid-column: span 2;
+            background: linear-gradient(145deg, rgba(255,170,0,0.15), rgba(255,170,0,0.05));
+            border-left: 4px solid #ffaa00;
+        }
+        
+        .info-item.altitude-item .info-value {
+            color: #ffaa00;
+            font-size: 28px;
+        }
+        
+        .info-item.altitude-item i {
+            color: #ffaa00;
             margin-right: 8px;
         }
         
@@ -195,6 +253,18 @@
             font-size: 11px;
             font-weight: bold;
             margin-left: 8px;
+            background: rgba(255,170,0,0.2);
+            color: #ffaa00;
+            border: 1px solid rgba(255,170,0,0.3);
+        }
+        
+        .wind-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
             background: rgba(68,204,255,0.2);
             color: #44ccff;
             border: 1px solid rgba(68,204,255,0.3);
@@ -211,7 +281,7 @@
         <i class="fas fa-flag-checkered"></i>
         <div>
             <h1>PROTO DRIVER</h1>
-            <p><i class="fas fa-trophy"></i> Racing Division • Share Live Location + Altitude</p>
+            <p><i class="fas fa-trophy"></i> Racing Division • Share Location + Wind + Altitude</p>
         </div>
     </div>
     
@@ -233,7 +303,7 @@
     <div class="card">
         <h3 style="margin-bottom: 15px; display: flex; gap: 10px;">
             <i class="fas fa-map-marked-alt" style="color: #ffaa00;"></i>
-            Posisi & Ketinggian
+            Posisi & Telemetry
         </h3>
         
         <div id="map"></div>
@@ -256,7 +326,27 @@
                 <div class="info-value" id="speedValue">0 km/h</div>
             </div>
             
-            <!-- ALTITUDE CARD - Menggunakan Open-Elevation API -->
+            <!-- WIND CARD - Menggunakan Open-Meteo API -->
+            <div class="info-item wind-item">
+                <div class="info-label">
+                    <i class="fas fa-wind"></i> 
+                    Arah Angin (Open-Meteo)
+                    <span class="wind-badge" id="windSource">GRATIS</span>
+                </div>
+                <div class="wind-row">
+                    <div class="wind-compass" id="windCompass" style="--wind-rotate: 0deg"></div>
+                    <div>
+                        <span class="wind-speed-big" id="windSpeedValue">--</span>
+                        <span class="wind-unit" style="color: #44ccff; font-size: 16px;">km/h</span>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <span id="windDirectionText" style="color: #44ccff;">Menunggu data...</span>
+                    <span id="windDescription" style="color: #a0b8cc;">--</span>
+                </div>
+            </div>
+            
+            <!-- ALTITUDE CARD -->
             <div class="info-item altitude-item">
                 <div class="info-label">
                     <i class="fas fa-mountain"></i> 
@@ -266,7 +356,7 @@
                 <div class="info-value" id="altitudeValue">
                     <i class="fas fa-arrow-up"></i> -- m
                 </div>
-                <div style="font-size: 11px; color: #44ccff; margin-top: 5px;" id="altitudeStatus">
+                <div style="font-size: 11px; color: #ffaa00; margin-top: 5px;" id="altitudeStatus">
                     Menunggu koordinat...
                 </div>
             </div>
@@ -284,8 +374,8 @@
                 <i class="fas fa-check-circle" style="color: #00ff88; font-size: 24px;"></i>
             </div>
             <div>
-                <h3 style="color: #00ff88;">LOKASI TERKIRIM!</h3>
-                <p style="color: #a0b8cc;">Dashboard akan menerima update lokasi + ketinggian</p>
+                <h3 style="color: #00ff88;">DATA TERKIRIM!</h3>
+                <p style="color: #a0b8cc;">Lokasi + Arah Angin + Ketinggian dikirim ke Pit</p>
             </div>
         </div>
     </div>
@@ -293,7 +383,7 @@
     <div class="footer">
         <i class="fas fa-gem" style="color: #ffaa00;"></i>
         <p style="margin-top: 10px;">NO PRESSURE NO DIAMOND • PROTO DIVISION</p>
-        <p style="margin-top: 5px;">Altitude via Open-Elevation API • Update Real-time</p>
+        <p style="margin-top: 5px;">Open-Meteo (GRATIS) + Open-Elevation • Real-time Wind & Altitude</p>
     </div>
 
     <script>
@@ -314,9 +404,13 @@
         let intervalId = null;
         let lastLocation = null;
         
-        // Cache untuk altitude (biar tidak request berulang untuk koordinat sama)
+        // Cache untuk altitude
         let lastAltitudeRequest = null;
         let lastAltitudeValue = null;
+        
+        // Cache untuk wind (biar tidak request berulang)
+        let lastWindRequest = null;
+        let lastWindData = null;
         
         // ========== INISIALISASI MAP ==========
         function initMap(lat = -6.5405, lng = 106.8569) {
@@ -349,9 +443,98 @@
             }
         }
         
-        // ========== FUNGSI AMBIL ALTITUDE DARI OPEN-ELEVATION API ==========
+        // ========== FUNGSI KONVERSI ARAH ANGIN ==========
+        function degreeToCompass(deg) {
+            const directions = [
+                'Utara', 'Utara Timur Laut', 'Timur Laut', 'Timur Timur Laut',
+                'Timur', 'Timur Tenggara', 'Tenggara', 'Selatan Tenggara',
+                'Selatan', 'Selatan Barat Daya', 'Barat Daya', 'Barat Barat Daya',
+                'Barat', 'Barat Barat Laut', 'Barat Laut', 'Utara Barat Laut'
+            ];
+            
+            const index = Math.round(deg / 22.5) % 16;
+            return directions[index];
+        }
+        
+        // ========== FUNGSI DESKRIPSI ANGIN ==========
+        function getWindDescription(speed) {
+            if (speed < 5) return 'Tenang';
+            if (speed < 15) return 'Sedikit hembusan';
+            if (speed < 25) return 'Sedang';
+            if (speed < 35) return 'Kencang';
+            if (speed < 45) return 'Kuat';
+            return 'Berbahaya';
+        }
+        
+        // ========== FUNGSI AMBIL DATA ANGIN DARI OPEN-METEO ==========
+        async function fetchWindData(lat, lng) {
+            // Cek cache (5 menit)
+            const coordKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+            const now = Date.now();
+            
+            if (lastWindRequest === coordKey && lastWindData && (now - lastWindData.timestamp) < 300000) {
+                console.log('🌬️ Using cached wind data');
+                return lastWindData;
+            }
+            
+            try {
+                // Open-Meteo API - GRATIS TANPA API KEY
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
+                
+                console.log('🌬️ Fetching wind data for:', coordKey);
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.current_weather) {
+                    const windData = {
+                        speed: data.current_weather.windspeed,
+                        direction: data.current_weather.winddirection,
+                        directionText: degreeToCompass(data.current_weather.winddirection),
+                        description: getWindDescription(data.current_weather.windspeed),
+                        temperature: data.current_weather.temperature,
+                        weatherCode: data.current_weather.weathercode,
+                        timestamp: Date.now()
+                    };
+                    
+                    // Update cache
+                    lastWindRequest = coordKey;
+                    lastWindData = windData;
+                    
+                    console.log('💨 Wind data:', windData);
+                    
+                    // Update UI
+                    updateWindUI(windData);
+                    
+                    return windData;
+                }
+            } catch (error) {
+                console.error('❌ Open-Meteo API error:', error);
+                
+                // Update UI dengan error
+                document.getElementById('windDirectionText').innerHTML = 'Gagal ambil data';
+                document.getElementById('windSpeedValue').innerHTML = '--';
+                
+                return null;
+            }
+        }
+        
+        // ========== UPDATE UI ANGIN ==========
+        function updateWindUI(windData) {
+            if (!windData) return;
+            
+            const speedEl = document.getElementById('windSpeedValue');
+            const dirTextEl = document.getElementById('windDirectionText');
+            const descEl = document.getElementById('windDescription');
+            const compassEl = document.getElementById('windCompass');
+            
+            if (speedEl) speedEl.innerHTML = windData.speed;
+            if (dirTextEl) dirTextEl.innerHTML = `${windData.directionText} (${windData.direction}°)`;
+            if (descEl) descEl.innerHTML = windData.description;
+            if (compassEl) compassEl.style.setProperty('--wind-rotate', windData.direction + 'deg');
+        }
+        
+        // ========== FUNGSI AMBIL ALTITUDE ==========
         async function fetchAltitude(lat, lng) {
-            // Cek cache (hindari request berulang untuk koordinat yang sama)
             const coordKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
             if (lastAltitudeRequest === coordKey && lastAltitudeValue !== null) {
                 return lastAltitudeValue;
@@ -367,11 +550,10 @@
                 if (data.results && data.results.length > 0) {
                     const elevation = Math.round(data.results[0].elevation);
                     
-                    // Update cache
                     lastAltitudeRequest = coordKey;
                     lastAltitudeValue = elevation;
                     
-                    console.log(`🏔️ Altitude: ${elevation} m for ${coordKey}`);
+                    console.log(`🏔️ Altitude: ${elevation} m`);
                     
                     // Update UI
                     const altValue = document.getElementById('altitudeValue');
@@ -382,7 +564,6 @@
                     }
                     
                     if (altStatus) {
-                        // Klasifikasi ketinggian
                         if (elevation < 100) {
                             altStatus.innerHTML = '📍 Dataran rendah';
                             altStatus.style.color = '#88dd88';
@@ -399,20 +580,14 @@
                     }
                     
                     return elevation;
-                } else {
-                    console.warn('No altitude data for', lat, lng);
-                    return null;
                 }
             } catch (error) {
                 console.error('❌ Elevation API error:', error);
-                
-                // Update UI dengan error
                 const altStatus = document.getElementById('altitudeStatus');
                 if (altStatus) {
-                    altStatus.innerHTML = '⚠️ Gagal ambil data ketinggian';
+                    altStatus.innerHTML = '⚠️ Gagal ambil data';
                     altStatus.style.color = '#ffaa00';
                 }
-                
                 return null;
             }
         }
@@ -423,8 +598,9 @@
             const lng = position.coords.longitude;
             const accuracy = position.coords.accuracy;
             const speed = position.coords.speed || 0;
+            const speedKmh = Math.round(speed * 3.6);
             
-            console.log('📍 Proto GPS Fix:', { lat, lng, accuracy, speed });
+            console.log('📍 Proto GPS Fix:', { lat, lng, accuracy, speed: speedKmh });
             
             if (!map) initMap(lat, lng);
             
@@ -433,32 +609,38 @@
             circle.setRadius(accuracy);
             map.setView([lat, lng], 18);
             
-            // Update UI dengan safe check
-            const latEl = document.getElementById('latValue');
-            const lngEl = document.getElementById('lngValue');
-            const accEl = document.getElementById('accValue');
-            const speedEl = document.getElementById('speedValue');
+            // Update UI
+            document.getElementById('latValue').innerHTML = lat.toFixed(6);
+            document.getElementById('lngValue').innerHTML = lng.toFixed(6);
+            document.getElementById('accValue').innerHTML = Math.round(accuracy) + ' m';
+            document.getElementById('speedValue').innerHTML = speedKmh + ' km/h';
             
-            if (latEl) latEl.innerHTML = lat.toFixed(6);
-            if (lngEl) lngEl.innerHTML = lng.toFixed(6);
-            if (accEl) accEl.innerHTML = Math.round(accuracy) + ' m';
-            if (speedEl) speedEl.innerHTML = Math.round(speed * 3.6) + ' km/h';
-            
-            // 🔥 AMBIL ALTITUDE DARI API
+            // 🔥 AMBIL ALTITUDE
             const altitude = await fetchAltitude(lat, lng);
             
+            // 🔥 AMBIL DATA ANGIN DARI OPEN-METEO
+            const windData = await fetchWindData(lat, lng);
+            
             if (isSharing) {
-                const gpsData = {
+                // Kirim semua data ke MQTT (Pit Dashboard)
+                const telemetryData = {
                     lat: lat,
                     lng: lng,
                     accuracy: Math.round(accuracy),
-                    speed: Math.round(speed * 3.6),
-                    altitude: altitude || 0,  // Sertakan altitude dalam data MQTT
+                    speed: speedKmh,
+                    altitude: altitude || 0,
+                    
+                    // Data angin dari Open-Meteo
+                    windSpeed: windData ? windData.speed : 0,
+                    windDirection: windData ? windData.direction : 0,
+                    windDirectionText: windData ? windData.directionText : 'N/A',
+                    windDescription: windData ? windData.description : 'N/A',
+                    
                     timestamp: Date.now()
                 };
                 
-                client.publish(TOPIC, JSON.stringify(gpsData));
-                console.log('📤 Proto GPS + Altitude sent:', gpsData);
+                client.publish(TOPIC, JSON.stringify(telemetryData));
+                console.log('📤 Data sent to Pit:', telemetryData);
                 
                 const warningEl = document.getElementById('gpsWarning');
                 if (warningEl) warningEl.style.display = 'none';
@@ -511,12 +693,15 @@
             if (warningEl) warningEl.style.display = 'block';
             if (messageEl) messageEl.innerHTML = 'Mencari sinyal GPS. Pastikan Anda di luar ruangan...';
             
-            // Reset altitude status
+            // Reset status
             const altStatus = document.getElementById('altitudeStatus');
             if (altStatus) {
                 altStatus.innerHTML = 'Mendapatkan data ketinggian...';
                 altStatus.style.color = '#44ccff';
             }
+            
+            // Reset wind status
+            document.getElementById('windDirectionText').innerHTML = 'Mendapatkan data angin...';
             
             // Cek izin
             if (navigator.permissions) {
@@ -541,15 +726,12 @@
                         timeout: 30000
                     });
                     
+                    // Interval tambahan untuk ambil data angin (refresh setiap 5 menit)
                     intervalId = setInterval(() => {
-                        if (isSharing) {
-                            navigator.geolocation.getCurrentPosition(updatePosition, null, {
-                                enableHighAccuracy: true,
-                                timeout: 10000,
-                                maximumAge: 5000
-                            });
+                        if (isSharing && lastLocation) {
+                            fetchWindData(lastLocation.lat, lastLocation.lng);
                         }
-                    }, 2000);
+                    }, 300000); // 5 menit
                 },
                 function(error) {
                     handleError(error);
@@ -630,7 +812,7 @@
             }
         });
         
-        console.log('🚗 Proto driver with Altitude ready');
+        console.log('🚗 Proto driver with Wind + Altitude ready');
     </script>
 </body>
 </html>
