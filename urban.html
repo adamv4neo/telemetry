@@ -2,579 +2,2120 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AKASA EVO-2 | TPMS Top View</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>AKASA EVO 3 - URBAN DASHBOARD</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- MQTT -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.0.0/mqtt.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --blue: #2f00ff;
+            --blue-dim: rgba(47,0,255,0.15);
+            --blue-border: rgba(47,0,255,0.25);
+            --red: #ff3d3d;
+            --green: #00ff88;
+            --cyan: #44ccff;
+            --bg-deep: #070b14;
+            --bg-card: rgba(12, 18, 32, 0.95);
+            --text-muted: #5a7a9a;
+            --text-dim: #8aa4bc;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: linear-gradient(135deg, #0f172a, #0a0f1a);
+            background: var(--bg-deep);
+            color: white;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             font-family: 'Rajdhani', sans-serif;
-            padding: 20px;
+            overflow-x: hidden;
         }
 
-        /* Main Container - Akasa Evo-2 Style */
-        .tpms-container {
-            background: #0c1424;
-            border: 2px solid #2a3a5a;
-            border-radius: 30px;
-            padding: 30px;
-            max-width: 1200px;
-            width: 100%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,100,255,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Grid pattern background */
-        .tpms-container::before {
+        /* Scanline overlay */
+        body::before {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                linear-gradient(rgba(0, 150, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 150, 255, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,255,0.02) 2px,
+                rgba(0,0,255,0.02) 4px
+            );
             pointer-events: none;
+            z-index: 9999;
         }
 
-        /* Header Section - Designer Info */
-        .tpms-header {
+        /* ========== NAVBAR ========== */
+        .navbar {
+            background: rgba(7, 11, 20, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--blue-border);
+            padding: 14px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding: 0 15px;
-            position: relative;
-            z-index: 2;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
-        .title-section {
+        .nav-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .akasa-logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 28px;
-            font-weight: 900;
-            color: #00a8ff;
-            letter-spacing: 4px;
-            text-shadow: 0 0 20px #00a8ff;
-            background: rgba(0,168,255,0.1);
-            padding: 8px 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(0,168,255,0.3);
-        }
-
-        .model-name {
-            font-size: 16px;
-            color: #8aa4bc;
-            letter-spacing: 2px;
-            background: rgba(0,0,0,0.3);
-            padding: 5px 15px;
-            border-radius: 20px;
-            border: 1px solid #2a3a5a;
-        }
-
-        .designer-info {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            background: rgba(0,0,0,0.4);
-            padding: 12px 25px;
-            border-radius: 40px;
-            border: 1px solid #2a3a5a;
-        }
-
-        .info-item {
-            text-align: center;
-        }
-
-        .info-label {
-            color: #5a7a9a;
-            font-size: 12px;
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--blue-border);
+            color: var(--text-dim);
+            padding: 7px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
             letter-spacing: 1px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: white;
+        }
+
+        .car-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .car-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--blue);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+        }
+
+        .car-icon i { font-size: 18px; color: white; }
+
+        .car-title h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 900;
+            color: white;
+            letter-spacing: 3px;
+            line-height: 1;
+        }
+
+        .car-title span {
+            font-size: 11px;
+            color: var(--blue);
+            letter-spacing: 2px;
+            font-weight: 600;
             text-transform: uppercase;
         }
 
-        .info-value {
-            color: #00a8ff;
-            font-weight: 700;
-            font-size: 16px;
-            font-family: 'Share Tech Mono', monospace;
-        }
-
-        /* Main Title */
-        .main-title {
-            text-align: center;
-            margin: 20px 0 30px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .main-title h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 42px;
-            font-weight: 900;
-            color: transparent;
-            -webkit-text-stroke: 2px #00a8ff;
-            letter-spacing: 8px;
-            text-shadow: 0 0 30px rgba(0,168,255,0.5);
-        }
-
-        .main-title .sub {
-            color: #5a7a9a;
-            font-size: 14px;
-            letter-spacing: 8px;
-            margin-top: -5px;
-        }
-
-        /* Scale Indicator */
-        .scale-indicator {
-            position: absolute;
-            top: 140px;
-            right: 50px;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 15px;
-            border-radius: 30px;
-            border: 1px solid #2a3a5a;
-            z-index: 3;
-        }
-
-        .scale-indicator span {
-            color: #ffaa00;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        /* TPMS Top View Canvas */
-        .tpms-canvas {
-            position: relative;
-            width: 100%;
-            height: 600px;
-            margin: 20px 0;
-            background: #0a101f;
-            border-radius: 50px;
-            border: 3px solid #1a2a40;
-            overflow: hidden;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
-            z-index: 2;
-        }
-
-        /* SVG untuk gambar tampak atas */
-        .car-top-view {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        /* Sensor positions - dari gambar referensi */
-        .sensor-label {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            fill: #00a8ff;
-            text-shadow: 0 0 10px #00a8ff;
-        }
-
-        .sensor-value {
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .pressure-value {
-            fill: #ffffff;
-        }
-
-        .temp-value {
-            fill: #ff9933;
-            font-size: 12px;
-        }
-
-        /* Sensor nodes */
-        .sensor-node {
-            filter: drop-shadow(0 0 15px currentColor);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Wheel numbers dari gambar (1265, 1170, dll) */
-        .wheel-number {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 24px;
-            font-weight: 900;
-            fill: #2a3a5a;
-            opacity: 0.3;
-        }
-
-        /* Dimension lines */
-        .dim-line {
-            stroke: #2a3a5a;
-            stroke-width: 1;
-            stroke-dasharray: 5,5;
-        }
-
-        .dim-text {
-            fill: #5a7a9a;
-            font-size: 14px;
-            font-family: 'Share Tech Mono', monospace;
-        }
-
-        /* Footer Info */
-        .tpms-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 30px;
-            padding: 20px 30px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 50px;
-            border: 1px solid #2a3a5a;
-            position: relative;
-            z-index: 2;
-        }
-
-        .footer-left {
+        .nav-right {
             display: flex;
             align-items: center;
-            gap: 30px;
+            gap: 20px;
         }
 
-        .footer-item {
+        .connection-status {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .footer-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(0,168,255,0.1);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(0,168,255,0.3);
-        }
-
-        .footer-icon i {
-            color: #00a8ff;
-            font-size: 20px;
-        }
-
-        .footer-text {
-            font-family: 'Share Tech Mono', monospace;
-        }
-
-        .footer-text .label {
-            color: #5a7a9a;
-            font-size: 11px;
+            background: rgba(0,0,0,0.4);
+            padding: 7px 16px;
+            border-radius: 4px;
+            border: 1px solid var(--blue-border);
+            font-size: 13px;
+            font-weight: 600;
             letter-spacing: 1px;
         }
 
-        .footer-text .value {
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--blue);
         }
 
-        .footer-right {
+        .dot.online {
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: blink 1.5s infinite;
+        }
+
+        .dot.offline { background: var(--red); }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .last-update {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ========== BANNER ========== */
+        .banner {
+            background: linear-gradient(90deg, transparent, rgba(47,0,255,0.06), transparent);
+            border-bottom: 1px solid var(--blue-border);
+            padding: 8px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .banner::before, .banner::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--blue));
+        }
+        .banner::before { left: 0; }
+        .banner::after { right: 0; background: linear-gradient(90deg, var(--blue), transparent); }
+
+        .banner h3 {
             font-family: 'Orbitron', sans-serif;
-            color: #ffaa00;
-            font-size: 14px;
-            letter-spacing: 2px;
+            color: var(--blue);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
         }
 
-        /* Status Bar */
-        .status-bar {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin: 20px 0;
-            padding: 15px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 40px;
+        /* ========== DASHBOARD ========== */
+        .dashboard {
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 24px 28px;
         }
 
-        .status-item {
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 10px;
-            color: #8aa4bc;
         }
 
-        .status-dot {
-            width: 10px;
-            height: 10px;
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--blue-border);
+        }
+
+        /* ========== MAP ========== */
+        .map-wrapper { margin-bottom: 28px; }
+
+        .map-container {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--blue-border);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--blue-border);
+            background: rgba(0,0,0,0.3);
+        }
+
+        .map-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        .map-header-left i { color: var(--blue); }
+
+        .driver-status {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+        }
+
+        #map {
+            height: 300px;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .location-info {
+            display: flex;
+            gap: 0;
+            border-top: 1px solid var(--blue-border);
+            flex-wrap: wrap;
+        }
+
+        .loc-item {
+            flex: 1;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--text-muted);
+            border-right: 1px solid var(--blue-border);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 200px;
+        }
+
+        .loc-item:last-child { border-right: none; }
+        .loc-item i { color: var(--blue); font-size: 11px; }
+
+        /* ========== GAUGE GRID ========== */
+        .gauge-section { margin-bottom: 28px; }
+
+        .gauge-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+        }
+
+        .gauge-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--blue-border);
+            padding: 18px 16px 14px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .gauge-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--blue), #4d33ff);
+        }
+
+        .gauge-card.afr-card::before { background: linear-gradient(90deg, var(--red), #ff8844); }
+        .gauge-card.temp-card::before { background: linear-gradient(90deg, #ff6622, #ffaa00); }
+        .gauge-card.altitude-card::before { background: linear-gradient(90deg, var(--cyan), #88ddff); }
+
+        .gauge-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gauge-label i { color: var(--blue); font-size: 14px; }
+        .gauge-card.afr-card .gauge-label i { color: var(--red); }
+        .gauge-card.temp-card .gauge-label i { color: #ff7722; }
+        .gauge-card.altitude-card .gauge-label i { color: var(--cyan); }
+
+        .gauge-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 42px;
+            font-weight: 900;
+            line-height: 1;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .gauge-card.speed-card .gauge-value { color: var(--blue); }
+        .gauge-card.rpm-card .gauge-value { color: #ffcc44; }
+        .gauge-card.afr-card .gauge-value { color: var(--green); }
+        .gauge-card.tps-card .gauge-value { color: var(--cyan); }
+        .gauge-card.temp-card .gauge-value { color: #ff9933; }
+        .gauge-card.altitude-card .gauge-value { color: var(--cyan); }
+
+        .gauge-unit-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .gauge-unit {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+        }
+
+        .gauge-badge {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            background: rgba(0,232,122,0.15);
+            color: var(--green);
+            border: 1px solid rgba(0,232,122,0.3);
+        }
+
+        .gauge-badge.warn {
+            background: rgba(255,170,0,0.15);
+            color: #ffaa00;
+            border-color: rgba(255,170,0,0.3);
+        }
+
+        .gauge-badge.danger {
+            background: rgba(255,61,61,0.15);
+            color: var(--red);
+            border-color: rgba(255,61,61,0.3);
+        }
+
+        .gauge-bar-track {
+            margin-top: 12px;
+            height: 4px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .gauge-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--blue), #4d33ff);
+            transition: width 0.4s ease;
+        }
+
+        .gauge-card.afr-card .gauge-bar-fill { background: linear-gradient(90deg, var(--red), #ff8844); }
+        .gauge-card.tps-card .gauge-bar-fill { background: linear-gradient(90deg, #0099ff, var(--cyan)); }
+        .gauge-card.temp-card .gauge-bar-fill { background: linear-gradient(90deg, #ff6622, #ffaa00); }
+        .gauge-card.altitude-card .gauge-bar-fill { background: linear-gradient(90deg, var(--cyan), #88ddff); }
+
+        .gauge-value.no-data {
+            color: var(--text-muted) !important;
+            font-size: 28px;
+        }
+
+        /* ========== CHARTS SECTION ========== */
+        .charts-section { margin-bottom: 28px; }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .temp-row {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--blue-border);
+            padding: 16px 20px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--blue), transparent);
+        }
+
+        .chart-card.afr-chart::before { background: linear-gradient(90deg, var(--red), transparent); }
+        .chart-card.tps-chart::before { background: linear-gradient(90deg, #0099ff, transparent); }
+        .chart-card.temp-chart::before { background: linear-gradient(90deg, #ff6622, transparent); }
+        .chart-card.altitude-chart::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+
+        .chart-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title i { color: var(--blue); }
+        .chart-card.afr-chart .chart-title i { color: var(--red); }
+        .chart-card.tps-chart .chart-title i { color: var(--cyan); }
+        .chart-card.temp-chart .chart-title i { color: #ff9933; }
+        .chart-card.altitude-chart .chart-title i { color: var(--cyan); }
+
+        .chart-timeframe {
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.04);
+            padding: 2px 8px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .chart-canvas-wrap {
+            position: relative;
+            height: 130px;
+        }
+
+        .big-chart-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--blue-border);
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .big-chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--blue), #4d33ff, transparent);
+        }
+
+        .big-chart-wrap {
+            position: relative;
+            height: 160px;
+        }
+
+        /* ========== NUMBER CARDS ========== */
+        .number-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--blue-border);
+            padding: 18px 16px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .number-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--blue), #4d33ff);
+        }
+
+        .number-main-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            color: var(--blue);
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .number-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .number-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            background: rgba(0,232,122,0.12);
+            color: var(--green);
+            border: 1px solid rgba(0,232,122,0.25);
+            position: relative;
+            z-index: 1;
+        }
+
+        .temp-number-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid rgba(255,102,34,0.3);
+            padding: 18px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .temp-number-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #ff6622, #ffaa00);
+        }
+
+        .temp-number-card .number-main-value { color: #ff9933; }
+
+        .altitude-number-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid rgba(68,204,255,0.3);
+            padding: 18px 16px;
+        }
+
+        .altitude-number-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--cyan), #88ddff);
+        }
+
+        .altitude-number-card .number-main-value { color: var(--cyan); }
+
+        /* ========== SENSOR GRID ========== */
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .sensor-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--blue-border);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .sensor-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(47,0,255,0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sensor-icon i { font-size: 20px; color: var(--blue); }
+
+        .sensor-info { flex: 1; }
+
+        .sensor-label {
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .sensor-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sensor-unit {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-left: 4px;
+        }
+
+        .sensor-trend {
+            font-size: 11px;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        /* ========== DATA TABLE ========== */
+        .table-section { margin-top: 28px; }
+
+        .data-table-wrap {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--blue-border);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--blue-border);
+            background: rgba(0,0,0,0.3);
+        }
+
+        .table-header h3 {
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-header h3 i { color: var(--blue); }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--green);
+        }
+
+        .live-dot {
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background: #00ff88;
-            box-shadow: 0 0 15px #00ff88;
+            background: var(--green);
+            animation: blink 1s infinite;
         }
 
-        .status-dot.warning {
-            background: #ffaa00;
-            box-shadow: 0 0 15px #ffaa00;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .status-dot.danger {
-            background: #ff3d3d;
-            box-shadow: 0 0 15px #ff3d3d;
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--blue-border);
+            background: rgba(0,0,0,0.2);
         }
 
-        /* Responsive */
+        td {
+            padding: 12px 16px;
+            color: var(--text-dim);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 13px;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(47,0,255,0.03); }
+
+        .value-highlight { color: var(--blue); font-weight: 700; }
+
+        /* ========== FOOTER ========== */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            border-top: 1px solid var(--blue-border);
+            margin-top: 40px;
+        }
+
+        .footer-gem { font-size: 20px; color: var(--blue); margin-bottom: 8px; }
+
+        .footer-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            color: var(--blue);
+        }
+
+        .footer-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* ========== WIND INDICATOR (NEW) ========== */
+        .wind-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(68,204,255,0.1);
+            padding: 8px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(68,204,255,0.3);
+        }
+
+        .wind-compass-small {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .wind-compass-small::before {
+            content: '↑';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(var(--wind-rotate, 0deg));
+            color: var(--cyan);
+            font-size: 14px;
+        }
+
+        .wind-info-small {
+            font-size: 12px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .wind-speed-small {
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .wind-dir-small {
+            color: var(--text-muted);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1200px) {
+            .gauge-grid { grid-template-columns: repeat(3, 1fr); }
+            .metric-row { grid-template-columns: 1fr 1fr; }
+            .sensor-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
         @media (max-width: 900px) {
-            .tpms-header {
-                flex-direction: column;
-                gap: 20px;
-            }
-            .main-title h1 {
-                font-size: 32px;
-                letter-spacing: 4px;
-            }
-            .tpms-canvas {
-                height: 450px;
-            }
+            .gauge-grid { grid-template-columns: repeat(2, 1fr); }
+            .metric-row { grid-template-columns: 1fr; }
+            .temp-row { grid-template-columns: 1fr; }
+            .sensor-grid { grid-template-columns: 1fr; }
+            .dashboard { padding: 16px; }
+        }
+
+        @media (max-width: 600px) {
+            .gauge-grid { grid-template-columns: repeat(2, 1fr); }
+            .navbar { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .gauge-value { font-size: 32px; }
+            .nav-right { width: 100%; justify-content: space-between; }
+            .location-info .loc-item { border-right: none; border-bottom: 1px solid var(--blue-border); }
         }
     </style>
 </head>
 <body>
-    <div class="tpms-container">
-        <!-- Header dengan info designer -->
-        <div class="tpms-header">
-            <div class="title-section">
-                <div class="akasa-logo">AKASA</div>
-                <div class="model-name">EVO-2</div>
-            </div>
-            <div class="designer-info">
-                <div class="info-item">
-                    <div class="info-label">Designer</div>
-                    <div class="info-value">Danu Sulthen</div>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="#" class="back-btn" onclick="history.back()">
+                <i class="fas fa-arrow-left"></i> BACK
+            </a>
+            <div class="car-info">
+                <div class="car-icon">
+                    <i class="fas fa-car"></i>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Checked</div>
-                    <div class="info-value">Yahya Zakaria</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Approved</div>
-                    <div class="info-value">Akasa Evo-2</div>
+                <div class="car-title">
+                    <h2>URBAN</h2>
+                    <span>Daily Driver Pro</span>
                 </div>
             </div>
         </div>
-
-        <!-- Main Title -->
-        <div class="main-title">
-            <h1>TPMS TOP VIEW</h1>
-            <div class="sub">TIRE PRESSURE MONITORING SYSTEM</div>
-        </div>
-
-        <!-- Scale Indicator -->
-        <div class="scale-indicator">
-            <span>⚡ 1:17 SCALE</span>
-        </div>
-
-        <!-- TPMS Canvas - Top View -->
-        <div class="tpms-canvas">
-            <svg viewBox="0 0 1000 600" class="car-top-view">
-                <!-- Background grid -->
-                <defs>
-                    <pattern id="grid" patternUnits="userSpaceOnUse" width="40" height="40">
-                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2a40" stroke-width="1"/>
-                    </pattern>
-                </defs>
-                <rect width="1000" height="600" fill="#0a101f"/>
-                <rect width="1000" height="600" fill="url(#grid)"/>
-
-                <!-- Dimension Lines - dari gambar (1265, 1170, dll) -->
-                <!-- Panjang total -->
-                <line x1="100" y1="100" x2="900" y2="100" class="dim-line"/>
-                <text x="480" y="80" class="dim-text">3030 mm (Total Length)</text>
-                
-                <!-- Wheelbase dimensions -->
-                <line x1="200" y1="150" x2="450" y2="150" class="dim-line"/>
-                <text x="300" y="130" class="dim-text">1265</text>
-                
-                <line x1="450" y1="150" x2="650" y2="150" class="dim-line"/>
-                <text x="520" y="130" class="dim-text">1170</text>
-                
-                <line x1="650" y1="150" x2="850" y2="150" class="dim-line"/>
-                <text x="720" y="130" class="dim-text">900</text>
-
-                <!-- Side dimensions -->
-                <line x1="100" y1="200" x2="100" y2="400" class="dim-line"/>
-                <text x="50" y="300" class="dim-text">1510</text>
-                
-                <line x1="900" y1="200" x2="900" y2="400" class="dim-line"/>
-                <text x="910" y="300" class="dim-text">620</text>
-
-                <!-- Center line -->
-                <line x1="100" y1="300" x2="900" y2="300" stroke="#2a3a5a" stroke-width="2" stroke-dasharray="10,10" opacity="0.3"/>
-
-                <!-- Car body outline (top view) -->
-                <path d="M 150 250 L 200 200 L 800 200 L 850 250 L 850 350 L 800 400 L 200 400 L 150 350 Z" 
-                      fill="rgba(20,40,80,0.6)" stroke="#2a5a9a" stroke-width="3"/>
-                
-                <!-- Windshield area -->
-                <path d="M 250 220 L 350 220 L 340 260 L 260 260 Z" fill="rgba(100,150,255,0.2)" stroke="#3a6ab0" stroke-width="2"/>
-                <path d="M 650 220 L 750 220 L 740 260 L 660 260 Z" fill="rgba(100,150,255,0.2)" stroke="#3a6ab0" stroke-width="2"/>
-
-                <!-- WHEEL POSITIONS - TPMS Sensors -->
-                <!-- Front Left Wheel (FL) -->
-                <g transform="translate(200, 250)">
-                    <circle cx="0" cy="0" r="45" fill="none" stroke="#00a8ff" stroke-width="3" stroke-dasharray="5,5"/>
-                    <circle cx="0" cy="0" r="35" fill="rgba(0,168,255,0.1)" stroke="#00a8ff" stroke-width="2"/>
-                    <circle cx="0" cy="0" r="8" fill="#00a8ff" class="sensor-node"/>
-                    <!-- Sensor data -->
-                    <text x="-30" y="-40" class="sensor-label">FL</text>
-                    <text x="-30" y="-20" class="sensor-value pressure-value">32 PSI</text>
-                    <text x="-30" y="-5" class="temp-value">42°C</text>
-                    <!-- Wheel number from image -->
-                    <text x="40" y="-30" class="wheel-number">1265</text>
-                </g>
-
-                <!-- Front Right Wheel (FR) -->
-                <g transform="translate(450, 250)">
-                    <circle cx="0" cy="0" r="45" fill="none" stroke="#00a8ff" stroke-width="3" stroke-dasharray="5,5"/>
-                    <circle cx="0" cy="0" r="35" fill="rgba(0,168,255,0.1)" stroke="#00a8ff" stroke-width="2"/>
-                    <circle cx="0" cy="0" r="8" fill="#00a8ff" class="sensor-node"/>
-                    <text x="10" y="-40" class="sensor-label">FR</text>
-                    <text x="10" y="-20" class="sensor-value pressure-value">33 PSI</text>
-                    <text x="10" y="-5" class="temp-value">41°C</text>
-                    <text x="-60" y="-30" class="wheel-number">1170</text>
-                </g>
-
-                <!-- Rear Left Wheel (RL) -->
-                <g transform="translate(650, 250)">
-                    <circle cx="0" cy="0" r="45" fill="none" stroke="#ffaa00" stroke-width="3" stroke-dasharray="5,5"/>
-                    <circle cx="0" cy="0" r="35" fill="rgba(255,170,0,0.1)" stroke="#ffaa00" stroke-width="2"/>
-                    <circle cx="0" cy="0" r="8" fill="#ffaa00" class="sensor-node"/>
-                    <text x="-30" y="-40" class="sensor-label" fill="#ffaa00">RL</text>
-                    <text x="-30" y="-20" class="sensor-value pressure-value" fill="#ffffff">35 PSI</text>
-                    <text x="-30" y="-5" class="temp-value" fill="#ff9933">48°C</text>
-                    <text x="40" y="-30" class="wheel-number">900</text>
-                </g>
-
-                <!-- Rear Right Wheel (RR) -->
-                <g transform="translate(850, 250)">
-                    <circle cx="0" cy="0" r="45" fill="none" stroke="#ff3d3d" stroke-width="3" stroke-dasharray="5,5"/>
-                    <circle cx="0" cy="0" r="35" fill="rgba(255,61,61,0.1)" stroke="#ff3d3d" stroke-width="2"/>
-                    <circle cx="0" cy="0" r="8" fill="#ff3d3d" class="sensor-node"/>
-                    <text x="10" y="-40" class="sensor-label" fill="#ff3d3d">RR</text>
-                    <text x="10" y="-20" class="sensor-value pressure-value" fill="#ffffff">28 PSI</text>
-                    <text x="10" y="-5" class="temp-value" fill="#ff3d3d">52°C</text>
-                    <text x="-70" y="-30" class="wheel-number">620</text>
-                </g>
-
-                <!-- Additional dimension numbers from image -->
-                <text x="450" y="500" class="wheel-number" font-size="20">1510</text>
-                <text x="800" y="500" class="wheel-number" font-size="20">880</text>
-                <text x="200" y="550" class="wheel-number" font-size="20">3030</text>
-                <text x="500" y="550" class="wheel-number" font-size="20">1050</text>
-
-                <!-- TPMS Signal Icons -->
-                <g transform="translate(500, 350)">
-                    <circle cx="0" cy="0" r="30" fill="none" stroke="#00ff88" stroke-width="2" stroke-dasharray="3,3"/>
-                    <circle cx="0" cy="0" r="20" fill="none" stroke="#00ff88" stroke-width="2" stroke-dasharray="3,3"/>
-                    <circle cx="0" cy="0" r="10" fill="none" stroke="#00ff88" stroke-width="2"/>
-                    <text x="40" y="-10" fill="#00ff88" font-size="12">RF</text>
-                </g>
-
-                <!-- Center TPMS Hub -->
-                <g transform="translate(500, 250)">
-                    <circle cx="0" cy="0" r="25" fill="rgba(0,168,255,0.2)" stroke="#00a8ff" stroke-width="2"/>
-                    <circle cx="0" cy="0" r="10" fill="#00a8ff" class="sensor-node"/>
-                    <text x="30" y="5" fill="#00a8ff" font-size="12">TPMS</text>
-                </g>
-            </svg>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div class="status-item">
-                <span class="status-dot"></span>
-                <span>FL: 32 PSI (Normal)</span>
+        <div class="nav-right">
+            <!-- Wind Indicator (New) -->
+            <div class="wind-indicator" id="windIndicator" style="display: none;">
+                <div class="wind-compass-small" id="windCompassSmall" style="--wind-rotate: 0deg"></div>
+                <div class="wind-info-small">
+                    <span class="wind-speed-small" id="windSpeedSmall">--</span>
+                    <span class="wind-unit-small">km/h</span>
+                    <span class="wind-dir-small" id="windDirSmall">N</span>
+                </div>
             </div>
-            <div class="status-item">
-                <span class="status-dot"></span>
-                <span>FR: 33 PSI (Normal)</span>
+            
+            <div class="connection-status">
+                <span class="dot offline" id="statusDot"></span>
+                <span id="statusText">OFFLINE</span>
             </div>
-            <div class="status-item">
-                <span class="status-dot warning"></span>
-                <span>RL: 35 PSI (Warm)</span>
-            </div>
-            <div class="status-item">
-                <span class="status-dot danger"></span>
-                <span>RR: 28 PSI (Low!)</span>
-            </div>
+            <span class="last-update" id="lastUpdate">--:--:--</span>
         </div>
+    </div>
 
-        <!-- Footer -->
-        <div class="tpms-footer">
-            <div class="footer-left">
-                <div class="footer-item">
-                    <div class="footer-icon">
-                        <i class="fas fa-car"></i>
+    <!-- BANNER -->
+    <div class="banner">
+        <h3><i class="fas fa-gem"></i> &nbsp; NO PRESSURE NO DIAMOND &nbsp; <i class="fas fa-gem"></i></h3>
+    </div>
+
+    <div class="dashboard">
+        <!-- MAP SECTION -->
+        <div class="map-wrapper">
+            <div class="section-label"><i class="fas fa-satellite" style="color:var(--blue)"></i> LIVE GPS TRACKING</div>
+            <div class="map-container">
+                <div class="map-header">
+                    <div class="map-header-left">
+                        <i class="fas fa-map-marked-alt"></i>
+                        Live Location — Urban Driver Pro
                     </div>
-                    <div class="footer-text">
-                        <div class="label">Vehicle</div>
-                        <div class="value">Akasa Evo-2</div>
+                    <div class="driver-status" id="driverStatus">
+                        <i class="fas fa-circle" style="color: var(--blue); font-size: 8px;"></i>
+                        Menunggu sinyal GPS...
                     </div>
                 </div>
-                <div class="footer-item">
-                    <div class="footer-icon">
-                        <i class="fas fa-weight-hanging"></i>
-                    </div>
-                    <div class="footer-text">
-                        <div class="label">Weight</div>
-                        <div class="value">1510 kg</div>
-                    </div>
+                <div id="map"></div>
+                <div class="location-info">
+                    <span class="loc-item" id="locationAddress">
+                        <i class="fas fa-map-pin"></i> Lat: --, Lng: --
+                    </span>
+                    <span class="loc-item" id="locationAccuracy">
+                        <i class="fas fa-satellite-dish"></i> Akurasi: -- m
+                    </span>
+                    <span class="loc-item" id="driverSpeed">
+                        <i class="fas fa-tachometer-alt"></i> Kecepatan: -- km/h
+                    </span>
+                    <span class="loc-item" id="lastLocationUpdate">
+                        <i class="fas fa-clock"></i> Update: --
+                    </span>
                 </div>
-                <div class="footer-item">
-                    <div class="footer-icon">
+            </div>
+        </div>
+
+        <!-- GAUGE CARDS -->
+        <div class="gauge-section">
+            <div class="section-label"><i class="fas fa-gauge-high" style="color:var(--blue)"></i> SENSOR READINGS</div>
+            <div class="gauge-grid">
+                <!-- SPEED -->
+                <div class="gauge-card speed-card">
+                    <div class="gauge-label">
+                        <span>SPEED</span>
                         <i class="fas fa-tachometer-alt"></i>
                     </div>
-                    <div class="footer-text">
-                        <div class="label">Pressure Unit</div>
-                        <div class="value">PSI / kPa</div>
+                    <div class="gauge-value no-data" id="speedValue">--</div>
+                    <div class="gauge-unit-row">
+                        <span class="gauge-unit">km/h</span>
+                        <span class="gauge-badge" id="speedBadge">--</span>
+                    </div>
+                    <div class="gauge-bar-track">
+                        <div class="gauge-bar-fill" id="speedBar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- RPM -->
+                <div class="gauge-card rpm-card">
+                    <div class="gauge-label">
+                        <span>RPM</span>
+                        <i class="fas fa-circle-notch"></i>
+                    </div>
+                    <div class="gauge-value no-data" id="rpmValue">--</div>
+                    <div class="gauge-unit-row">
+                        <span class="gauge-unit">RPM</span>
+                        <span class="gauge-badge" id="rpmBadge">--</span>
+                    </div>
+                    <div class="gauge-bar-track">
+                        <div class="gauge-bar-fill" id="rpmBar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- AFR -->
+                <div class="gauge-card afr-card">
+                    <div class="gauge-label">
+                        <span>AIR-FUEL RATIO</span>
+                        <i class="fas fa-gas-pump"></i>
+                    </div>
+                    <div class="gauge-value no-data" id="afrValue">--</div>
+                    <div class="gauge-unit-row">
+                        <span class="gauge-unit">λ</span>
+                        <span class="gauge-badge" id="afrBadge">--</span>
+                    </div>
+                    <div class="gauge-bar-track">
+                        <div class="gauge-bar-fill" id="afrBar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- TPS -->
+                <div class="gauge-card tps-card">
+                    <div class="gauge-label">
+                        <span>THROTTLE</span>
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="gauge-value no-data" id="tpsValue">--</div>
+                    <div class="gauge-unit-row">
+                        <span class="gauge-unit">%</span>
+                        <span class="gauge-badge" id="tpsBadge">--</span>
+                    </div>
+                    <div class="gauge-bar-track">
+                        <div class="gauge-bar-fill" id="tpsBar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- TEMP -->
+                <div class="gauge-card temp-card">
+                    <div class="gauge-label">
+                        <span>COOLANT TEMP</span>
+                        <i class="fas fa-temperature-high"></i>
+                    </div>
+                    <div class="gauge-value no-data" id="tempValue">--</div>
+                    <div class="gauge-unit-row">
+                        <span class="gauge-unit">°C</span>
+                        <span class="gauge-badge" id="tempBadge">--</span>
+                    </div>
+                    <div class="gauge-bar-track">
+                        <div class="gauge-bar-fill" id="tempBar" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- ALTITUDE (FIXED) -->
+                <div class="gauge-card altitude-card">
+                    <div class="gauge-label">
+                        <span>ALTITUDE</span>
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <div class="gauge-value no-data" id="altitudeValue">--</div>
+                    <div class="gauge-unit-row">
+                        <span class="gauge-unit">meter</span>
+                        <span class="gauge-badge" id="altitudeBadge">MSL</span>
+                    </div>
+                    <div class="gauge-bar-track">
+                        <div class="gauge-bar-fill" id="altitudeBar" style="width:0%"></div>
                     </div>
                 </div>
             </div>
-            <div class="footer-right">
-                <i class="fas fa-bolt"></i> TPMS ACTIVE <i class="fas fa-bolt"></i>
+        </div>
+
+        <!-- CHARTS SECTION -->
+        <div class="charts-section">
+            <div class="section-label"><i class="fas fa-chart-line" style="color:var(--blue)"></i> HISTORY CHARTS</div>
+
+            <!-- Speed + RPM Combined Chart -->
+            <div class="big-chart-card">
+                <div class="chart-title">
+                    <span><i class="fas fa-tachometer-alt"></i> &nbsp; SPEED & RPM — 30 DETIK TERAKHIR</span>
+                    <span class="chart-timeframe">30s</span>
+                </div>
+                <div class="big-chart-wrap">
+                    <canvas id="speedRpmChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Row: AFR Chart | TPS Chart | Live Metrics -->
+            <div class="metric-row">
+                <div class="chart-card afr-chart">
+                    <div class="chart-title">
+                        <span><i class="fas fa-gas-pump"></i> &nbsp; AFR / LAMBDA</span>
+                        <span class="chart-timeframe">30s</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="afrChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card tps-chart">
+                    <div class="chart-title">
+                        <span><i class="fas fa-sliders-h" style="color:#44ccff"></i> &nbsp; THROTTLE POSITION</span>
+                        <span class="chart-timeframe">30s</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="tpsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Live Metrics Card -->
+                <div class="chart-card" style="display:flex; flex-direction:column; justify-content:center;">
+                    <div class="chart-title">
+                        <span><i class="fas fa-gauge-high"></i> &nbsp; LIVE METRICS</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">MAX SPEED</div>
+                            <div style="font-family:'Orbitron'; font-size:26px; color:var(--blue);" id="maxSpeed">--</div>
+                            <div style="font-size:11px;color:var(--text-muted)">km/h</div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">MAX RPM</div>
+                            <div style="font-family:'Orbitron'; font-size:26px; color:#ffcc44;" id="maxRpm">--</div>
+                            <div style="font-size:11px;color:var(--text-muted)">RPM</div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">RUN TIME</div>
+                            <div style="font-family:'Share Tech Mono'; font-size:22px; color:white;" id="runTime">0:00</div>
+                            <div style="font-size:11px;color:var(--text-muted)">menit</div>
+                        </div>
+                        <div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">MAX ALTITUDE</div>
+                            <div style="font-family:'Orbitron'; font-size:26px; color:var(--cyan);" id="maxAltitude">--</div>
+                            <div style="font-size:11px;color:var(--text-muted)">mdpl</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEMPERATURE SECTION -->
+            <div class="section-label" style="margin-top:4px;"><i class="fas fa-temperature-high" style="color:#ff9933"></i> COOLANT TEMPERATURE</div>
+            <div class="temp-row">
+                <!-- Temperature Number Card -->
+                <div class="temp-number-card" id="tempNumberCard">
+                    <div class="number-label">
+                        <i class="fas fa-temperature-high"></i> SUHU MESIN
+                    </div>
+                    <div>
+                        <span class="number-main-value" id="tempBigValue">--</span>
+                        <span class="temp-unit-big">°C</span>
+                    </div>
+                    <div class="number-status-badge" id="tempStatusBadge">
+                        <i class="fas fa-circle" style="font-size:7px;"></i>
+                        MENUNGGU DATA
+                    </div>
+                </div>
+
+                <!-- Temperature Chart -->
+                <div class="chart-card temp-chart">
+                    <div class="chart-title">
+                        <span><i class="fas fa-fire"></i> &nbsp; TEMPERATURE HISTORY — 30 DETIK TERAKHIR</span>
+                        <span class="chart-timeframe">30s</span>
+                    </div>
+                    <div style="position:relative; height: 160px;">
+                        <canvas id="tempChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALTITUDE SECTION (FIXED) -->
+            <div class="section-label" style="margin-top:20px;"><i class="fas fa-mountain" style="color:var(--cyan)"></i> ALTITUDE TRACKING</div>
+            <div class="temp-row">
+                <!-- Altitude Number Card -->
+                <div class="altitude-number-card" id="altitudeNumberCard">
+                    <div class="number-label" style="color:var(--cyan);">
+                        <i class="fas fa-mountain"></i> KETINGGIAN
+                    </div>
+                    <div>
+                        <span class="number-main-value" id="altitudeBigValue" style="color:var(--cyan);">--</span>
+                        <span class="temp-unit-big">mdpl</span>
+                    </div>
+                    <div class="number-status-badge" id="altitudeStatusBadge" style="background:rgba(68,204,255,0.12); color:var(--cyan); border-color:rgba(68,204,255,0.25);">
+                        <i class="fas fa-circle" style="font-size:7px;"></i>
+                        MENUNGGU DATA
+                    </div>
+                </div>
+
+                <!-- Altitude Chart -->
+                <div class="chart-card altitude-chart">
+                    <div class="chart-title">
+                        <span><i class="fas fa-chart-line" style="color:var(--cyan)"></i> &nbsp; ALTITUDE HISTORY — 30 DETIK TERAKHIR</span>
+                        <span class="chart-timeframe">30s</span>
+                    </div>
+                    <div style="position:relative; height: 160px;">
+                        <canvas id="altitudeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SENSOR GRID (WIND + WEATHER) -->
+        <div class="sensor-grid">
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-wind"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">WIND SPEED</div>
+                    <div>
+                        <span class="sensor-value" id="windSpeedValue">--</span>
+                        <span class="sensor-unit">km/h</span>
+                    </div>
+                    <div class="sensor-trend" id="windDirectionDisplay">
+                        <i class="fas fa-compass"></i> Arah: --
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-temperature-low"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">AIR TEMP</div>
+                    <div>
+                        <span class="sensor-value" id="airTempValue">--</span>
+                        <span class="sensor-unit">°C</span>
+                    </div>
+                    <div class="sensor-trend" id="weatherDesc">
+                        <i class="fas fa-cloud"></i> Cuaca: --
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-stopwatch"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">RUN TIME</div>
+                    <div>
+                        <span class="sensor-value" id="runTimeSmall">0:00</span>
+                        <span class="sensor-unit">menit</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-gauge-high"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">ENGINE LOAD</div>
+                    <div>
+                        <span class="sensor-value" id="engineLoad">--</span>
+                        <span class="sensor-unit">%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA TABLE -->
+        <div class="table-section">
+            <div class="section-label"><i class="fas fa-microchip" style="color:var(--blue)"></i> SENSOR LOG</div>
+            <div class="data-table-wrap">
+                <div class="table-header">
+                    <h3><i class="fas fa-table"></i> REAL-TIME DATA LOG</h3>
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        LIVE
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>TIMESTAMP</th>
+                            <th>SPEED</th>
+                            <th>RPM</th>
+                            <th>AFR (λ)</th>
+                            <th>TPS</th>
+                            <th>TEMP</th>
+                            <th>ALTITUDE</th>
+                            <th>WIND</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sensorLog">
+                        <tr>
+                            <td>--:--:--</td>
+                            <td>-- km/h</td>
+                            <td>-- RPM</td>
+                            <td>-- λ</td>
+                            <td>--%</td>
+                            <td>--°C</td>
+                            <td>-- m</td>
+                            <td>-- km/h</td>
+                            <td style="color:var(--text-muted);">STANDBY</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="footer-gem"><i class="fas fa-gem"></i></div>
+        <div class="footer-title">NO PRESSURE NO DIAMOND</div>
+        <div class="footer-sub">Urban Division Pro · Real-time GPS + Wind + Altitude from Driver's Phone</div>
+    </div>
+
+    <script>
+        // ========== MQTT CONFIGURATION ==========
+        const MQTT_BROKER = 'wss://broker.emqx.io:8084/mqtt';
+        const MQTT_OPTIONS = {
+            clientId: 'urban_dash_pro_' + Math.random().toString(16).substring(2, 10),
+            clean: true,
+            reconnectPeriod: 3000
+        };
+
+        console.log('🔵 Connecting to MQTT broker...');
+        const client = mqtt.connect(MQTT_BROKER, MQTT_OPTIONS);
+
+        // ========== MAP INITIALIZATION ==========
+        let map, marker, circle;
+        let isMapInitialized = false;
+        let lastLocation = null;
+
+        const defaultLat = -6.2088;
+        const defaultLng = 106.8456;
+
+        function initMap(lat = defaultLat, lng = defaultLng) {
+            if (isMapInitialized) return;
+
+            map = L.map('map').setView([lat, lng], 14);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            const carIcon = L.divIcon({
+                html: '<i class="fas fa-car" style="font-size:28px;color:#2f00ff;text-shadow:0 0 12px rgba(47,0,255,0.8);"></i>',
+                className: 'custom-car-icon',
+                iconSize: [28, 28],
+                iconAnchor: [14, 14]
+            });
+
+            marker = L.marker([lat, lng], { icon: carIcon }).addTo(map);
+            circle = L.circle([lat, lng], {
+                radius: 50,
+                color: '#2f00ff',
+                weight: 1,
+                opacity: 0.3,
+                fillColor: '#2f00ff',
+                fillOpacity: 0.08
+            }).addTo(map);
+
+            isMapInitialized = true;
+        }
+
+        // ========== VARIABEL UNTUK MENYIMPAN NILAI TERAKHIR ==========
+        let lastValidSpeed = 0;
+        let lastValidRpm = 0;
+        let lastValidAfr = 14.7;
+        let lastValidTps = 0;
+        let lastValidTemp = 0;
+        let lastValidAltitude = 0;
+        let lastValidWindSpeed = 0;
+        let lastValidWindDirection = 0;
+        let lastValidWindDirectionText = 'N';
+        let lastValidAirTemp = 0;
+        let lastValidWeatherDesc = '--';
+        
+        // Timestamp untuk track kapan terakhir receive data valid
+        let lastValidSpeedTime = Date.now();
+        let lastValidRpmTime = Date.now();
+        let validAfrReceived = false;
+        let lastValidTpsTime = Date.now();
+        let lastValidTempTime = Date.now();
+        let lastValidAltitudeTime = Date.now();
+        let lastValidWindTime = Date.now();
+
+        // Threshold waktu (ms)
+        const DATA_TIMEOUT = 2000; // 2 detik
+
+        function updateLocation(lat, lng, accuracy = 25, speed = 0) {
+            if (lastLocation && 
+                lastLocation.lat === lat && 
+                lastLocation.lng === lng) return;
+
+            lastLocation = { lat, lng, accuracy, speed };
+            
+            if (!isMapInitialized) initMap(lat, lng);
+
+            try {
+                marker.setLatLng([lat, lng]);
+                circle.setLatLng([lat, lng]);
+                circle.setRadius(accuracy);
+                map.setView([lat, lng], 16);
+
+                document.getElementById('locationAddress').innerHTML =
+                    `<i class="fas fa-map-pin"></i> Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+                document.getElementById('locationAccuracy').innerHTML =
+                    `<i class="fas fa-satellite-dish"></i> Akurasi: ${Math.round(accuracy)} m`;
+                document.getElementById('driverSpeed').innerHTML =
+                    `<i class="fas fa-tachometer-alt"></i> Kecepatan: ${Math.round(speed)} km/h`;
+
+                const now = new Date();
+                document.getElementById('lastLocationUpdate').innerHTML =
+                    `<i class="fas fa-clock"></i> Update: ${now.toLocaleTimeString('id-ID')}`;
+
+                document.getElementById('driverStatus').innerHTML = speed > 0 ?
+                    `<i class="fas fa-circle" style="color:#00ff88;font-size:8px;"></i> Driver Online · ${Math.round(speed)} km/h` :
+                    `<i class="fas fa-circle" style="color:#00ff88;font-size:8px;"></i> Driver Online`;
+            } catch (e) {
+                console.error('Map update error:', e);
+            }
+        }
+
+        // ========== FUNGSI KONVERSI ARAH ANGIN ==========
+        function degreeToCompass(deg) {
+            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+            const index = Math.round(deg / 22.5) % 16;
+            return directions[index];
+        }
+
+        function getWindDescription(speed) {
+            if (speed < 5) return 'Tenang';
+            if (speed < 15) return 'Sedikit hembusan';
+            if (speed < 25) return 'Sedang';
+            if (speed < 35) return 'Kencang';
+            if (speed < 45) return 'Kuat';
+            return 'Berbahaya';
+        }
+
+        function getWeatherDescription(code) {
+            const weatherCodes = {
+                0: 'Cerah', 1: 'Cerah', 2: 'Berawan', 3: 'Mendung',
+                45: 'Kabut', 48: 'Kabut', 51: 'Gerimis', 53: 'Gerimis',
+                55: 'Gerimis', 61: 'Hujan', 63: 'Hujan', 65: 'Hujan',
+                80: 'Hujan', 81: 'Hujan', 82: 'Hujan', 95: 'Badai'
+            };
+            return weatherCodes[code] || '--';
+        }
+
+        // ========== UPDATE WIND UI ==========
+        function updateWindUI(windData) {
+            if (!windData) return;
+            
+            lastValidWindSpeed = windData.speed || 0;
+            lastValidWindDirection = windData.direction || 0;
+            lastValidWindDirectionText = degreeToCompass(lastValidWindDirection);
+            lastValidAirTemp = windData.temperature || 0;
+            lastValidWeatherDesc = getWeatherDescription(windData.weatherCode);
+            lastValidWindTime = Date.now();
+            
+            // Update wind indicator di navbar
+            document.getElementById('windIndicator').style.display = 'flex';
+            document.getElementById('windCompassSmall').style.setProperty('--wind-rotate', lastValidWindDirection + 'deg');
+            document.getElementById('windSpeedSmall').textContent = lastValidWindSpeed;
+            document.getElementById('windDirSmall').textContent = lastValidWindDirectionText;
+            
+            // Update sensor grid
+            document.getElementById('windSpeedValue').textContent = lastValidWindSpeed;
+            document.getElementById('windDirectionDisplay').innerHTML = `<i class="fas fa-compass"></i> Arah: ${lastValidWindDirectionText} (${lastValidWindDirection}°)`;
+            document.getElementById('airTempValue').textContent = lastValidAirTemp;
+            document.getElementById('weatherDesc').innerHTML = `<i class="fas fa-cloud"></i> Cuaca: ${lastValidWeatherDesc}`;
+        }
+
+        // ========== CHARTS INITIALIZATION ==========
+        const maxDataPoints = 30;
+        const timeLabels = Array.from({ length: maxDataPoints }, (_, i) => `-${maxDataPoints - i}s`);
+
+        const speedData = new Array(maxDataPoints).fill(null);
+        const rpmData = new Array(maxDataPoints).fill(null);
+        const afrData = new Array(maxDataPoints).fill(null);
+        const tpsData = new Array(maxDataPoints).fill(null);
+        const tempHistData = new Array(maxDataPoints).fill(null);
+        const altitudeData = new Array(maxDataPoints).fill(null);
+
+        function shiftPush(arr, val) {
+            arr.shift();
+            arr.push(val);
+        }
+
+        const commonGridColor = 'rgba(255,255,255,0.04)';
+        const commonTickColor = '#5a7a9a';
+
+        // Speed + RPM Chart
+        const speedRpmChart = new Chart(
+            document.getElementById('speedRpmChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [
+                        {
+                            label: 'Speed (km/h)',
+                            data: speedData,
+                            borderColor: '#2f00ff',
+                            backgroundColor: 'rgba(47,0,255,0.06)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            fill: true,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'RPM (×100)',
+                            data: rpmData,
+                            borderColor: '#ffaa00',
+                            backgroundColor: 'rgba(255,170,0,0.04)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            fill: true,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    animation: { duration: 300 },
+                    plugins: {
+                        legend: { display: true, position: 'top', labels: { color: '#8aa4bc', font: { size: 11 } } },
+                        tooltip: { backgroundColor: '#0c1220', titleColor: '#fff', bodyColor: '#8aa4bc' }
+                    },
+                    scales: {
+                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
+                        y: {
+                            position: 'left',
+                            grid: { color: 'rgba(47,0,255,0.07)' },
+                            ticks: { color: '#2f00ff', font: { size: 10 } },
+                            title: { display: true, text: 'km/h', color: '#2f00ff', font: { size: 10 } }
+                        },
+                        y1: {
+                            position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#ffaa00', font: { size: 10 } },
+                            title: { display: true, text: 'RPM ×100', color: '#ffaa00', font: { size: 10 } }
+                        }
+                    }
+                }
+            }
+        );
+
+        // AFR Chart
+        const afrChart = new Chart(
+            document.getElementById('afrChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [
+                        {
+                            label: 'AFR (λ)',
+                            data: afrData,
+                            borderColor: '#ff3d3d',
+                            backgroundColor: 'rgba(255,61,61,0.07)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            pointRadius: 0,
+                            fill: true
+                        },
+                        {
+                            label: 'Stoich 14.7',
+                            data: new Array(maxDataPoints).fill(14.7),
+                            borderColor: 'rgba(255,255,255,0.15)',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 300 },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,61,61,0.07)' }, ticks: { color: '#ff3d3d', font: { size: 10 } }, min: 10, max: 20 }
+                    }
+                }
+            }
+        );
+
+        // TPS Chart
+        const tpsChart = new Chart(
+            document.getElementById('tpsChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'TPS (%)',
+                        data: tpsData,
+                        borderColor: '#44ccff',
+                        backgroundColor: 'rgba(68,204,255,0.06)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 300 },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(68,204,255,0.07)' }, ticks: { color: '#44ccff', font: { size: 10 } }, min: 0, max: 100 }
+                    }
+                }
+            }
+        );
+
+        // Temperature Chart
+        const tempChart = new Chart(
+            document.getElementById('tempChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Suhu (°C)',
+                        data: tempHistData,
+                        borderColor: '#ff9933',
+                        backgroundColor: 'rgba(255,153,51,0.07)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 300 },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,153,51,0.07)' }, ticks: { color: '#ff9933', font: { size: 10 } }, min: 0 }
+                    }
+                }
+            }
+        );
+
+        // Altitude Chart (FIXED)
+        const altitudeChart = new Chart(
+            document.getElementById('altitudeChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Altitude (m)',
+                        data: altitudeData,
+                        borderColor: '#44ccff',
+                        backgroundColor: 'rgba(68,204,255,0.06)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 0,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 300 },
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
+                        y: { 
+                            grid: { color: 'rgba(68,204,255,0.07)' }, 
+                            ticks: { color: '#44ccff', font: { size: 10 } },
+                            title: { display: true, text: 'meter', color: '#44ccff', font: { size: 10 } }
+                        }
+                    }
+                }
+            }
+        );
+
+        // ========== MAX TRACKERS ==========
+        let maxSpeed = 0;
+        let maxRpm = 0;
+        let maxAltitude = 0;
+
+        // ========== GAUGE UPDATE FUNCTIONS ==========
+        function setGaugeReady(el) {
+            if (el) el.classList.remove('no-data');
+        }
+
+        function updateSpeed(val) {
+            const numVal = parseInt(val);
+            const now = Date.now();
+            
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '';
+            
+            if (isDataValid) {
+                lastValidSpeed = numVal;
+                lastValidSpeedTime = now;
+            }
+            
+            let displayValue = lastValidSpeed;
+            
+            const speedEl = document.getElementById('speedValue');
+            if (speedEl) {
+                setGaugeReady(speedEl);
+                speedEl.textContent = displayValue;
+            }
+            
+            const speedBar = document.getElementById('speedBar');
+            if (speedBar) speedBar.style.width = Math.min(100, displayValue / 2) + '%';
+
+            if (displayValue > maxSpeed) {
+                maxSpeed = displayValue;
+                document.getElementById('maxSpeed').textContent = displayValue;
+            }
+
+            const badge = document.getElementById('speedBadge');
+            if (badge) {
+                if (displayValue === 0) { 
+                    badge.textContent = 'IDLE'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 80) { 
+                    badge.textContent = 'NORMAL'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 140) { 
+                    badge.textContent = 'FAST'; 
+                    badge.className = 'gauge-badge warn'; 
+                }
+                else { 
+                    badge.textContent = 'LIMIT'; 
+                    badge.className = 'gauge-badge danger'; 
+                }
+            }
+
+            shiftPush(speedData, displayValue);
+            speedRpmChart.update('none');
+        }
+
+        function updateRpm(val) {
+            const numVal = parseInt(val);
+            const now = Date.now();
+            
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '';
+            
+            if (isDataValid) {
+                lastValidRpm = numVal;
+                lastValidRpmTime = now;
+            }
+            
+            let displayValue = lastValidRpm;
+            
+            const rpmEl = document.getElementById('rpmValue');
+            if (rpmEl) {
+                setGaugeReady(rpmEl);
+                rpmEl.textContent = displayValue;
+            }
+            
+            const rpmBar = document.getElementById('rpmBar');
+            if (rpmBar) rpmBar.style.width = Math.min(100, displayValue / 120) + '%';
+
+            if (displayValue > maxRpm) {
+                maxRpm = displayValue;
+                document.getElementById('maxRpm').textContent = displayValue;
+            }
+
+            const badge = document.getElementById('rpmBadge');
+            if (badge) {
+                if (displayValue < 3000) { 
+                    badge.textContent = 'LOW'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 7000) { 
+                    badge.textContent = 'MID'; 
+                    badge.className = 'gauge-badge warn'; 
+                }
+                else { 
+                    badge.textContent = 'HIGH'; 
+                    badge.className = 'gauge-badge danger'; 
+                }
+            }
+
+            shiftPush(rpmData, displayValue / 100);
+            speedRpmChart.update('none');
+        }
+
+        function updateAfr(val) {
+            const numVal = parseFloat(val);
+            const now = Date.now();
+            
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 10 && numVal <= 20;
+            
+            if (isDataValid) {
+                lastValidAfr = numVal;
+                lastValidAfrTime = now;
+                validAfrReceived = true;
+            }
+            
+            let displayValue = lastValidAfr;
+            let displayText = validAfrReceived ? displayValue.toFixed(1) : '--';
+            
+            const el = document.getElementById('afrValue');
+            const badge = document.getElementById('afrBadge');
+            const afrBar = document.getElementById('afrBar');
+            
+            if (!validAfrReceived) {
+                if (el) {
+                    el.textContent = '--';
+                    el.classList.add('no-data');
+                }
+                if (badge) badge.textContent = '--';
+                if (afrBar) afrBar.style.width = '0%';
+                return;
+            }
+            
+            if (el) {
+                setGaugeReady(el);
+                el.textContent = displayText;
+            }
+            
+            if (afrBar) {
+                const barWidth = Math.min(100, Math.max(0, ((displayValue - 10) / 10) * 100));
+                afrBar.style.width = barWidth + '%';
+            }
+
+            if (badge) {
+                if (displayValue < 12) {
+                    if (el) el.style.color = '#ff4444';
+                    badge.textContent = 'RICH';
+                    badge.className = 'gauge-badge danger';
+                } else if (displayValue > 16) {
+                    if (el) el.style.color = '#ffaa00';
+                    badge.textContent = 'LEAN';
+                    badge.className = 'gauge-badge warn';
+                } else {
+                    if (el) el.style.color = '#00ff88';
+                    badge.textContent = 'STOICH';
+                    badge.className = 'gauge-badge';
+                }
+            }
+
+            shiftPush(afrData, displayValue);
+            afrChart.update('none');
+        }
+
+        function updateTps(val) {
+            const numVal = parseInt(val);
+            const now = Date.now();
+            
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0 && numVal <= 100;
+            
+            if (isDataValid) {
+                lastValidTps = numVal;
+                lastValidTpsTime = now;
+            }
+            
+            let displayValue = lastValidTps;
+            
+            const tpsEl = document.getElementById('tpsValue');
+            if (tpsEl) {
+                setGaugeReady(tpsEl);
+                tpsEl.textContent = displayValue;
+            }
+            
+            const tpsBar = document.getElementById('tpsBar');
+            if (tpsBar) tpsBar.style.width = displayValue + '%';
+
+            const load = Math.min(100, Math.round(displayValue * 0.8 + 20));
+            document.getElementById('engineLoad').textContent = load;
+
+            const badge = document.getElementById('tpsBadge');
+            if (badge) {
+                if (displayValue < 30) { 
+                    badge.textContent = 'LIGHT'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 70) { 
+                    badge.textContent = 'MED'; 
+                    badge.className = 'gauge-badge warn'; 
+                }
+                else { 
+                    badge.textContent = 'FULL'; 
+                    badge.className = 'gauge-badge danger'; 
+                }
+            }
+
+            shiftPush(tpsData, displayValue);
+            tpsChart.update('none');
+        }
+
+        function updateTemp(val) {
+            const numVal = parseInt(val);
+            const now = Date.now();
+            
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
+            
+            if (isDataValid) {
+                lastValidTemp = numVal;
+                lastValidTempTime = now;
+            }
+            
+            let displayValue = lastValidTemp;
+
+            const tempEl = document.getElementById('tempValue');
+            if (tempEl) {
+                setGaugeReady(tempEl);
+                tempEl.textContent = displayValue;
+            }
+            
+            const tempBar = document.getElementById('tempBar');
+            if (tempBar) tempBar.style.width = Math.min(100, (displayValue / 120) * 100) + '%';
+
+            const tempBig = document.getElementById('tempBigValue');
+            if (tempBig) tempBig.textContent = displayValue;
+
+            const badge = document.getElementById('tempBadge');
+            const statusBadge = document.getElementById('tempStatusBadge');
+
+            if (badge) {
+                if (displayValue < 70) {
+                    badge.textContent = 'COLD';
+                    badge.className = 'gauge-badge';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(68,204,255,0.12)';
+                        statusBadge.style.color = '#44ccff';
+                        statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> COLD — WARMING UP';
+                    }
+                } else if (displayValue < 95) {
+                    badge.textContent = 'NORMAL';
+                    badge.className = 'gauge-badge';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(0,232,122,0.12)';
+                        statusBadge.style.color = '#00ff88';
+                        statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> NORMAL OPERATING TEMP';
+                    }
+                } else if (displayValue < 110) {
+                    badge.textContent = 'WARM';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(255,170,0,0.12)';
+                        statusBadge.style.color = '#ffaa00';
+                        statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> WARM — MONITOR';
+                    }
+                } else {
+                    badge.textContent = 'HOT!';
+                    badge.className = 'gauge-badge danger';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(255,61,61,0.15)';
+                        statusBadge.style.color = '#ff3d3d';
+                        statusBadge.innerHTML = '<i class="fas fa-fire" style="font-size:7px;"></i> OVERHEAT WARNING!';
+                    }
+                }
+            }
+
+            shiftPush(tempHistData, displayValue);
+            tempChart.update('none');
+        }
+
+        // ========== UPDATE ALTITUDE (FIXED) ==========
+        function updateAltitude(val) {
+            const numVal = parseInt(val);
+            const now = Date.now();
+            
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && val >= 0;
+            
+            if (isDataValid) {
+                lastValidAltitude = numVal;
+                lastValidAltitudeTime = now;
+            }
+            
+            let displayValue = lastValidAltitude;
+            
+            // Update gauge card
+            const altEl = document.getElementById('altitudeValue');
+            if (altEl) {
+                setGaugeReady(altEl);
+                altEl.textContent = displayValue;
+            }
+            
+            const altBar = document.getElementById('altitudeBar');
+            if (altBar) {
+                const barWidth = Math.min(100, (displayValue / 3000) * 100);
+                altBar.style.width = barWidth + '%';
+            }
+            
+            // Update big number card
+            const altBig = document.getElementById('altitudeBigValue');
+            if (altBig) altBig.textContent = displayValue;
+            
+            // Track max altitude
+            if (displayValue > maxAltitude) {
+                maxAltitude = displayValue;
+                document.getElementById('maxAltitude').textContent = displayValue;
+            }
+            
+            // Update badges
+            const badge = document.getElementById('altitudeBadge');
+            const statusBadge = document.getElementById('altitudeStatusBadge');
+            
+            if (badge) {
+                if (displayValue < 500) {
+                    badge.textContent = 'RENDAH';
+                    badge.className = 'gauge-badge';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN RENDAH';
+                } else if (displayValue < 1000) {
+                    badge.textContent = 'SEDANG';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN TINGGI';
+                } else if (displayValue < 2000) {
+                    badge.textContent = 'TINGGI';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> PEGUNUNGAN';
+                } else {
+                    badge.textContent = 'EKSTRIM';
+                    badge.className = 'gauge-badge danger';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-skull" style="font-size:7px;"></i> VERY HIGH ALTITUDE';
+                }
+            }
+            
+            // Update chart
+            shiftPush(altitudeData, displayValue);
+            altitudeChart.update('none');
+        }
+
+        // ========== SENSOR LOG UPDATE ==========
+        function updateSensorLog(data) {
+            const tbody = document.getElementById('sensorLog');
+            const timeStr = new Date().toLocaleTimeString('id-ID');
+
+            const speed = data.speed ?? data.kecepatan ?? lastValidSpeed;
+            const rpm = data.rpm ?? data.rpm_coil ?? lastValidRpm;
+            const afr = data.afr ?? data.afr_etanol ?? (validAfrReceived ? lastValidAfr.toFixed(1) : '--');
+            const tps = data.tps ?? data.throttle ?? lastValidTps;
+            const temp = data.temp ?? data.suhu ?? lastValidTemp;
+            const alt = data.altitude ?? data.ketinggian ?? lastValidAltitude;
+            const wind = data.windSpeed ?? lastValidWindSpeed;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span style="color:var(--blue);font-family:'Share Tech Mono'">${timeStr}</span></td>
+                <td><span class="value-highlight">${speed}</span> km/h</td>
+                <td>${rpm} RPM</td>
+                <td>${typeof afr === 'number' ? afr.toFixed(1) : afr} λ</td>
+                <td>${tps}%</td>
+                <td>${temp}°C</td>
+                <td>${alt} m</td>
+                <td>${wind} km/h</td>
+                <td style="color:#00ff88;">ACTIVE</td>
+            `;
+
+            tbody.insertBefore(tr, tbody.firstChild);
+            while (tbody.rows.length > 8) {
+                tbody.deleteRow(tbody.rows.length - 1);
+            }
+        }
+
+        // ========== MQTT HANDLERS ==========
+        client.on('connect', () => {
+            console.log('✅ Connected to MQTT');
+            document.getElementById('statusDot').className = 'dot online';
+            document.getElementById('statusText').textContent = 'ONLINE';
+
+            client.subscribe('location/urban/coordinates');
+            console.log('📡 Subscribed to location/urban/coordinates');
+        });
+
+        client.on('disconnect', () => {
+            document.getElementById('statusDot').className = 'dot offline';
+            document.getElementById('statusText').textContent = 'OFFLINE';
+        });
+
+        client.on('error', err => console.error('MQTT Error:', err));
+
+        client.on('message', (topic, message) => {
+            const value = message.toString();
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('id-ID');
+
+            // Parse JSON data dari Urban Pro driver
+            if (topic === 'location/urban/coordinates') {
+                try {
+                    const data = JSON.parse(value);
+                    
+                    // Update lokasi
+                    if (data.lat && data.lng && !isNaN(data.lat) && !isNaN(data.lng)) {
+                        updateLocation(
+                            parseFloat(data.lat),
+                            parseFloat(data.lng),
+                            data.accuracy || 25,
+                            data.speed || 0
+                        );
+                    }
+                    
+                    // Update semua sensor
+                    if (data.speed !== undefined) updateSpeed(data.speed);
+                    if (data.rpm !== undefined) updateRpm(data.rpm);
+                    if (data.afr !== undefined) updateAfr(data.afr);
+                    if (data.tps !== undefined) updateTps(data.tps);
+                    if (data.temp !== undefined) updateTemp(data.temp);
+                    
+                    // ALTITUDE - INI YANG DIPERBAIKI
+                    if (data.altitude !== undefined && data.altitude !== null && data.altitude > 0) {
+                        console.log('🏔️ Altitude received:', data.altitude, 'm');
+                        updateAltitude(data.altitude);
+                    }
+                    
+                    // Wind data
+                    if (data.windSpeed !== undefined || data.windDirection !== undefined) {
+                        updateWindUI({
+                            speed: data.windSpeed || 0,
+                            direction: data.windDirection || 0,
+                            temperature: data.temperature || 0,
+                            weatherCode: data.weatherCode || 0
+                        });
+                    }
+                    
+                    // Run time
+                    if (data.runTime !== undefined) {
+                        document.getElementById('runTime').textContent = data.runTime;
+                        document.getElementById('runTimeSmall').textContent = data.runTime;
+                    }
+                    
+                    // Update log
+                    updateSensorLog(data);
+                    
+                } catch (e) {
+                    // Fallback untuk format CSV lama
+                    const parts = value.split(',');
+                    if (parts.length >= 2) {
+                        const lat = parseFloat(parts[0]);
+                        const lng = parseFloat(parts[1]);
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                            updateLocation(lat, lng, parts[2] ? parseFloat(parts[2]) : 25, parts[3] ? parseFloat(parts[3]) : 0);
+                        }
+                    }
+                }
+                return;
+            }
+        });
+
+        // ========== INITIALIZE ==========
+        initMap();
+        console.log('🚗 Urban Dashboard Pro ready - waiting for altitude data...');
+    </script>
 </body>
 </html>
+
