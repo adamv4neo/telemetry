@@ -1257,7 +1257,7 @@
             }
         }
 
-        // ========== VARIABEL UNTUK MENYIMPAN NILAI TERAKHIR ==========
+               // ========== VARIABEL UNTUK MENYIMPAN NILAI TERAKHIR ==========
         let lastValidSpeed = 0;
         let lastValidRpm = 0;
         let lastValidAfr = 14.7;
@@ -1265,14 +1265,8 @@
         let lastValidTemp = 0;
         let lastValidAltitude = 0;
 
-        // Timestamp untuk track kapan terakhir receive data valid
-        let lastValidSpeedTime = Date.now();
-        let lastValidRpmTime = Date.now();
-        let lastValidAfrTime = Date.now();
+        // Flag untuk AFR pertama kali
         let validAfrReceived = false;
-        let lastValidTpsTime = Date.now();
-        let lastValidTempTime = Date.now();
-        let lastValidAltitudeTime = Date.now();
 
         // Threshold waktu (ms)
         const DATA_TIMEOUT = 2000; // 2 detik
@@ -1500,20 +1494,20 @@
         let maxRpm = 0;
         let maxAltitude = 0;
 
-        // ========== GAUGE UPDATE FUNCTIONS ==========
+        // ========== FUNGSI UPDATE (SAMA PERSIS PROTO.HTML) ==========
         function setGaugeReady(el) {
             if (el) el.classList.remove('no-data');
         }
 
+        // SPEED
         function updateSpeed(val) {
             const numVal = parseInt(val);
-            const now = Date.now();
             
+            // CEK: Apakah ini data valid?
             const isDataValid = !isNaN(numVal) && val !== null && val !== '';
             
             if (isDataValid) {
                 lastValidSpeed = numVal;
-                lastValidSpeedTime = now;
             }
             
             let displayValue = lastValidSpeed;
@@ -1556,15 +1550,14 @@
             speedRpmChart.update('none');
         }
 
+        // RPM
         function updateRpm(val) {
             const numVal = parseInt(val);
-            const now = Date.now();
             
             const isDataValid = !isNaN(numVal) && val !== null && val !== '';
             
             if (isDataValid) {
                 lastValidRpm = numVal;
-                lastValidRpmTime = now;
             }
             
             let displayValue = lastValidRpm;
@@ -1603,15 +1596,14 @@
             speedRpmChart.update('none');
         }
 
+        // AFR
         function updateAfr(val) {
             const numVal = parseFloat(val);
-            const now = Date.now();
             
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 10 && numVal <= 20;
             
             if (isDataValid) {
                 lastValidAfr = numVal;
-                lastValidAfrTime = now;
                 validAfrReceived = true;
             }
             
@@ -1662,15 +1654,14 @@
             afrChart.update('none');
         }
 
+        // TPS
         function updateTps(val) {
             const numVal = parseInt(val);
-            const now = Date.now();
             
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0 && numVal <= 100;
             
             if (isDataValid) {
                 lastValidTps = numVal;
-                lastValidTpsTime = now;
             }
             
             let displayValue = lastValidTps;
@@ -1707,15 +1698,14 @@
             tpsChart.update('none');
         }
 
+        // TEMP
         function updateTemp(val) {
             const numVal = parseInt(val);
-            const now = Date.now();
             
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
             
             if (isDataValid) {
                 lastValidTemp = numVal;
-                lastValidTempTime = now;
             }
             
             let displayValue = lastValidTemp;
@@ -1774,15 +1764,14 @@
             tempChart.update('none');
         }
 
+        // ALTITUDE
         function updateAltitude(val) {
             const numVal = parseInt(val);
-            const now = Date.now();
             
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
             
             if (isDataValid) {
                 lastValidAltitude = numVal;
-                lastValidAltitudeTime = now;
             }
             
             let displayValue = lastValidAltitude;
@@ -1862,7 +1851,7 @@
             }
         }
 
-        // ========== MQTT HANDLERS (COPIED FROM PROTO.HTML - WORKING) ==========
+        // ========== MQTT HANDLERS ==========
         client.on('connect', () => {
             console.log('✅ Connected to MQTT');
             document.getElementById('statusDot').className = 'dot online';
@@ -1884,7 +1873,6 @@
 
         client.on('message', (topic, message) => {
             const value = message.toString();
-            const now = Date.now();
 
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
             
@@ -1978,3 +1966,4 @@
     </script>
 </body>
 </html>
+
