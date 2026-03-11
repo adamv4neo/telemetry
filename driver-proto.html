@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROTO DRIVER | Share Location + Altitude + Wind</title>
+    <title>URBAN DRIVER PRO | Share Location + Altitude + Wind</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -24,15 +24,15 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a0f1f, #1e0a2b);
+            background: linear-gradient(135deg, #0a1a2f, #0e1a2b);
             color: white;
             min-height: 100vh;
             padding: 20px;
         }
         
         .header {
-            background: rgba(255,170,0,0.1);
-            border-bottom: 3px solid #ffaa00;
+            background: rgba(0,168,255,0.1);
+            border-bottom: 3px solid #00a8ff;
             padding: 20px;
             border-radius: 15px 15px 0 0;
             margin-bottom: 20px;
@@ -43,7 +43,7 @@
         
         .header i {
             font-size: 36px;
-            color: #ffaa00;
+            color: #00a8ff;
         }
         
         .header h1 {
@@ -56,20 +56,20 @@
         }
         
         .card {
-            background: rgba(26, 16, 46, 0.9);
+            background: rgba(16, 26, 46, 0.9);
             border-radius: 20px;
             padding: 25px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255,170,0,0.3);
+            border: 1px solid rgba(0,168,255,0.3);
         }
         
         .status-card {
-            background: rgba(255,170,0,0.15);
-            border-left: 6px solid #ffaa00;
+            background: rgba(0,168,255,0.15);
+            border-left: 6px solid #00a8ff;
         }
         
         .btn {
-            background: linear-gradient(45deg, #ffaa00, #ff8800);
+            background: linear-gradient(45deg, #00a8ff, #0066ff);
             border: none;
             color: white;
             padding: 18px 30px;
@@ -89,7 +89,7 @@
         
         .btn:hover {
             transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(255,170,0,0.5);
+            box-shadow: 0 0 20px rgba(0,168,255,0.5);
         }
         
         .btn:active {
@@ -105,7 +105,7 @@
             width: 100%;
             border-radius: 15px;
             margin: 15px 0;
-            border: 2px solid #ffaa00;
+            border: 2px solid #00a8ff;
         }
         
         .info-grid {
@@ -120,7 +120,7 @@
             padding: 15px;
             border-radius: 12px;
             text-align: center;
-            border: 1px solid rgba(255,170,0,0.2);
+            border: 1px solid rgba(0,168,255,0.2);
         }
         
         .info-label {
@@ -132,7 +132,7 @@
         .info-value {
             font-size: 20px;
             font-weight: bold;
-            color: #ffaa00;
+            color: #00a8ff;
         }
         
         /* Khusus untuk wind card */
@@ -196,17 +196,17 @@
         /* Khusus untuk altitude card */
         .info-item.altitude-item {
             grid-column: span 2;
-            background: linear-gradient(145deg, rgba(255,170,0,0.15), rgba(255,170,0,0.05));
-            border-left: 4px solid #ffaa00;
+            background: linear-gradient(145deg, rgba(0,168,255,0.15), rgba(0,168,255,0.05));
+            border-left: 4px solid #00a8ff;
         }
         
         .info-item.altitude-item .info-value {
-            color: #ffaa00;
+            color: #00a8ff;
             font-size: 28px;
         }
         
         .info-item.altitude-item i {
-            color: #ffaa00;
+            color: #00a8ff;
             margin-right: 8px;
         }
         
@@ -245,7 +245,7 @@
             font-size: 12px;
         }
         
-        /* Elevation badge */
+        /* Badges */
         .elevation-badge {
             display: inline-block;
             padding: 4px 8px;
@@ -253,9 +253,9 @@
             font-size: 11px;
             font-weight: bold;
             margin-left: 8px;
-            background: rgba(255,170,0,0.2);
-            color: #ffaa00;
-            border: 1px solid rgba(255,170,0,0.3);
+            background: rgba(0,168,255,0.2);
+            color: #00a8ff;
+            border: 1px solid rgba(0,168,255,0.3);
         }
         
         .wind-badge {
@@ -270,25 +270,47 @@
             border: 1px solid rgba(68,204,255,0.3);
         }
         
+        /* Stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat-mini {
+            background: rgba(0,0,0,0.2);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .stat-mini i {
+            color: #00a8ff;
+            margin-right: 5px;
+        }
+        
         @media (max-width: 480px) {
             .header h1 { font-size: 20px; }
             .btn { padding: 15px; font-size: 16px; }
+            .info-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <i class="fas fa-flag-checkered"></i>
+        <i class="fas fa-car"></i>
         <div>
-            <h1>PROTO DRIVER</h1>
-            <p><i class="fas fa-trophy"></i> Racing Division • Share Location + Wind + Altitude</p>
+            <h1>URBAN DRIVER PRO</h1>
+            <p><i class="fas fa-calendar"></i> Daily Driver • Share Location + Wind + Altitude</p>
         </div>
     </div>
     
     <div class="card status-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <i class="fas fa-satellite-dish" style="color: #ffaa00; margin-right: 10px;"></i>
+                <i class="fas fa-satellite-dish" style="color: #00a8ff; margin-right: 10px;"></i>
                 <span>MQTT Status</span>
             </div>
             <span id="mqttStatus" class="connection-badge">📡 Connecting...</span>
@@ -302,8 +324,8 @@
     
     <div class="card">
         <h3 style="margin-bottom: 15px; display: flex; gap: 10px;">
-            <i class="fas fa-map-marked-alt" style="color: #ffaa00;"></i>
-            Posisi & Telemetry
+            <i class="fas fa-map-marked-alt" style="color: #00a8ff;"></i>
+            Posisi & Telemetry Urban
         </h3>
         
         <div id="map"></div>
@@ -311,11 +333,11 @@
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label"><i class="fas fa-map-pin"></i> Latitude</div>
-                <div class="info-value" id="latValue">-6.5405</div>
+                <div class="info-value" id="latValue">-6.2088</div>
             </div>
             <div class="info-item">
                 <div class="info-label"><i class="fas fa-map-pin"></i> Longitude</div>
-                <div class="info-value" id="lngValue">106.8569</div>
+                <div class="info-value" id="lngValue">106.8456</div>
             </div>
             <div class="info-item">
                 <div class="info-label"><i class="fas fa-crosshairs"></i> Akurasi</div>
@@ -326,7 +348,22 @@
                 <div class="info-value" id="speedValue">0 km/h</div>
             </div>
             
-            <!-- WIND CARD - Menggunakan Open-Meteo API -->
+            <!-- ALTITUDE CARD - Urban Style -->
+            <div class="info-item altitude-item">
+                <div class="info-label">
+                    <i class="fas fa-mountain"></i> 
+                    Ketinggian (Open-Elevation)
+                    <span class="elevation-badge" id="altitudeSource">API</span>
+                </div>
+                <div class="info-value" id="altitudeValue">
+                    <i class="fas fa-arrow-up"></i> -- m
+                </div>
+                <div style="font-size: 11px; color: #00a8ff; margin-top: 5px;" id="altitudeStatus">
+                    Menunggu koordinat...
+                </div>
+            </div>
+            
+            <!-- WIND CARD - Urban Style -->
             <div class="info-item wind-item">
                 <div class="info-label">
                     <i class="fas fa-wind"></i> 
@@ -345,20 +382,15 @@
                     <span id="windDescription" style="color: #a0b8cc;">--</span>
                 </div>
             </div>
-            
-            <!-- ALTITUDE CARD -->
-            <div class="info-item altitude-item">
-                <div class="info-label">
-                    <i class="fas fa-mountain"></i> 
-                    Ketinggian (Open-Elevation)
-                    <span class="elevation-badge" id="altitudeSource">API</span>
-                </div>
-                <div class="info-value" id="altitudeValue">
-                    <i class="fas fa-arrow-up"></i> -- m
-                </div>
-                <div style="font-size: 11px; color: #ffaa00; margin-top: 5px;" id="altitudeStatus">
-                    Menunggu koordinat...
-                </div>
+        </div>
+        
+        <!-- Additional Stats -->
+        <div class="stats-row">
+            <div class="stat-mini">
+                <i class="fas fa-temperature-high"></i> Suhu: <span id="temperatureValue">--</span>°C
+            </div>
+            <div class="stat-mini">
+                <i class="fas fa-cloud"></i> Cuaca: <span id="weatherValue">--</span>
             </div>
         </div>
     </div>
@@ -375,24 +407,24 @@
             </div>
             <div>
                 <h3 style="color: #00ff88;">DATA TERKIRIM!</h3>
-                <p style="color: #a0b8cc;">Lokasi + Arah Angin + Ketinggian dikirim ke Pit</p>
+                <p style="color: #a0b8cc;">Lokasi + Ketinggian + Arah Angin dikirim ke Dashboard Urban</p>
             </div>
         </div>
     </div>
     
     <div class="footer">
-        <i class="fas fa-gem" style="color: #ffaa00;"></i>
-        <p style="margin-top: 10px;">NO PRESSURE NO DIAMOND • PROTO DIVISION</p>
-        <p style="margin-top: 5px;">Open-Meteo (GRATIS) + Open-Elevation • Real-time Wind & Altitude</p>
+        <i class="fas fa-gem" style="color: #00a8ff;"></i>
+        <p style="margin-top: 10px;">NO PRESSURE NO DIAMOND • URBAN DIVISION PRO</p>
+        <p style="margin-top: 5px;">Open-Meteo + Open-Elevation • Real-time Wind & Altitude</p>
     </div>
 
     <script>
         // ========== KONFIGURASI MQTT ==========
         const BROKER = 'wss://broker.emqx.io:8084/mqtt';
-        const TOPIC = 'location/proto/coordinates';
+        const TOPIC_URBAN = 'location/urban/coordinates';  // Tetap pakai topic Urban
         
         const client = mqtt.connect(BROKER, {
-            clientId: 'proto_driver_' + Math.random().toString(16).substring(2, 8),
+            clientId: 'urban_pro_driver_' + Math.random().toString(16).substring(2, 8),
             clean: true,
             reconnectPeriod: 3000
         });
@@ -408,12 +440,12 @@
         let lastAltitudeRequest = null;
         let lastAltitudeValue = null;
         
-        // Cache untuk wind (biar tidak request berulang)
+        // Cache untuk wind
         let lastWindRequest = null;
         let lastWindData = null;
         
         // ========== INISIALISASI MAP ==========
-        function initMap(lat = -6.5405, lng = 106.8569) {
+        function initMap(lat = -6.2088, lng = 106.8456) {
             if (!map) {
                 map = L.map('map').setView([lat, lng], 16);
                 
@@ -421,8 +453,9 @@
                     attribution: '© OpenStreetMap'
                 }).addTo(map);
                 
+                // Custom car icon Urban
                 const carIcon = L.divIcon({
-                    html: '<i class="fas fa-flag-checkered" style="font-size: 32px; color: #ffaa00; text-shadow: 0 0 20px rgba(255,170,0,0.8);"></i>',
+                    html: '<i class="fas fa-car" style="font-size: 32px; color: #00a8ff; text-shadow: 0 0 20px rgba(0,168,255,0.8);"></i>',
                     className: 'car-icon',
                     iconSize: [32, 32],
                     iconAnchor: [16, 16]
@@ -432,14 +465,14 @@
                 
                 circle = L.circle([lat, lng], {
                     radius: 20,
-                    color: '#ffaa00',
+                    color: '#00a8ff',
                     weight: 2,
                     opacity: 0.4,
-                    fillColor: '#ffaa00',
+                    fillColor: '#00a8ff',
                     fillOpacity: 0.1
                 }).addTo(map);
                 
-                console.log('🗺️ Proto map initialized');
+                console.log('🗺️ Urban Pro map initialized');
             }
         }
         
@@ -466,6 +499,41 @@
             return 'Berbahaya';
         }
         
+        // ========== FUNGSI GET WEATHER CODE ==========
+        function getWeatherDescription(code) {
+            const weatherCodes = {
+                0: 'Cerah',
+                1: 'Cerah',
+                2: 'Berawan',
+                3: 'Mendung',
+                45: 'Kabut',
+                48: 'Kabut',
+                51: 'Gerimis',
+                53: 'Gerimis',
+                55: 'Gerimis',
+                56: 'Gerimis',
+                57: 'Gerimis',
+                61: 'Hujan',
+                63: 'Hujan',
+                65: 'Hujan',
+                66: 'Hujan',
+                67: 'Hujan',
+                71: 'Salju',
+                73: 'Salju',
+                75: 'Salju',
+                77: 'Salju',
+                80: 'Hujan',
+                81: 'Hujan',
+                82: 'Hujan',
+                85: 'Salju',
+                86: 'Salju',
+                95: 'Badai',
+                96: 'Badai',
+                99: 'Badai'
+            };
+            return weatherCodes[code] || 'Tidak diketahui';
+        }
+        
         // ========== FUNGSI AMBIL DATA ANGIN DARI OPEN-METEO ==========
         async function fetchWindData(lat, lng) {
             // Cek cache (5 menit)
@@ -474,6 +542,7 @@
             
             if (lastWindRequest === coordKey && lastWindData && (now - lastWindData.timestamp) < 300000) {
                 console.log('🌬️ Using cached wind data');
+                updateWindUI(lastWindData);
                 return lastWindData;
             }
             
@@ -504,6 +573,13 @@
                     
                     // Update UI
                     updateWindUI(windData);
+                    
+                    // Update suhu dan cuaca
+                    const tempEl = document.getElementById('temperatureValue');
+                    const weatherEl = document.getElementById('weatherValue');
+                    
+                    if (tempEl) tempEl.innerHTML = windData.temperature;
+                    if (weatherEl) weatherEl.innerHTML = getWeatherDescription(windData.weatherCode);
                     
                     return windData;
                 }
@@ -569,7 +645,7 @@
                             altStatus.style.color = '#88dd88';
                         } else if (elevation < 500) {
                             altStatus.innerHTML = '⛰️ Perbukitan';
-                            altStatus.style.color = '#ffaa00';
+                            altStatus.style.color = '#00a8ff';
                         } else if (elevation < 1000) {
                             altStatus.innerHTML = '🏔️ Pegunungan';
                             altStatus.style.color = '#ff8800';
@@ -600,7 +676,10 @@
             const speed = position.coords.speed || 0;
             const speedKmh = Math.round(speed * 3.6);
             
-            console.log('📍 Proto GPS Fix:', { lat, lng, accuracy, speed: speedKmh });
+            // Simpan lokasi terakhir
+            lastLocation = { lat, lng };
+            
+            console.log('📍 Urban Pro GPS Fix:', { lat, lng, accuracy, speed: speedKmh });
             
             if (!map) initMap(lat, lng);
             
@@ -609,25 +688,28 @@
             circle.setRadius(accuracy);
             map.setView([lat, lng], 18);
             
-            // Update UI
+            // Update UI dasar
             document.getElementById('latValue').innerHTML = lat.toFixed(6);
             document.getElementById('lngValue').innerHTML = lng.toFixed(6);
             document.getElementById('accValue').innerHTML = Math.round(accuracy) + ' m';
             document.getElementById('speedValue').innerHTML = speedKmh + ' km/h';
             
-            // 🔥 AMBIL ALTITUDE
+            // AMBIL ALTITUDE
             const altitude = await fetchAltitude(lat, lng);
             
-            // 🔥 AMBIL DATA ANGIN DARI OPEN-METEO
+            // AMBIL DATA ANGIN DARI OPEN-METEO
             const windData = await fetchWindData(lat, lng);
             
             if (isSharing) {
-                // Kirim semua data ke MQTT (Pit Dashboard)
+                // Kirim semua data ke MQTT (Dashboard Urban)
                 const telemetryData = {
+                    // Data dasar
                     lat: lat,
                     lng: lng,
                     accuracy: Math.round(accuracy),
                     speed: speedKmh,
+                    
+                    // Data ketinggian
                     altitude: altitude || 0,
                     
                     // Data angin dari Open-Meteo
@@ -636,12 +718,20 @@
                     windDirectionText: windData ? windData.directionText : 'N/A',
                     windDescription: windData ? windData.description : 'N/A',
                     
+                    // Data tambahan
+                    temperature: windData ? windData.temperature : 0,
+                    weatherCode: windData ? windData.weatherCode : 0,
+                    
+                    // Metadata
+                    driver: 'Urban Pro',
                     timestamp: Date.now()
                 };
                 
-                client.publish(TOPIC, JSON.stringify(telemetryData));
-                console.log('📤 Data sent to Pit:', telemetryData);
+                // Kirim ke topic Urban
+                client.publish(TOPIC_URBAN, JSON.stringify(telemetryData));
+                console.log('📤 Data sent to Urban Dashboard:', telemetryData);
                 
+                // Sembunyikan warning
                 const warningEl = document.getElementById('gpsWarning');
                 if (warningEl) warningEl.style.display = 'none';
             }
@@ -649,7 +739,7 @@
         
         // ========== HANDLE ERROR GPS ==========
         function handleError(error) {
-            console.error('❌ Proto GPS Error:', error);
+            console.error('❌ Urban Pro GPS Error:', error);
             
             const warningEl = document.getElementById('gpsWarning');
             const messageEl = document.getElementById('warningMessage');
@@ -697,7 +787,7 @@
             const altStatus = document.getElementById('altitudeStatus');
             if (altStatus) {
                 altStatus.innerHTML = 'Mendapatkan data ketinggian...';
-                altStatus.style.color = '#44ccff';
+                altStatus.style.color = '#00a8ff';
             }
             
             // Reset wind status
@@ -726,10 +816,16 @@
                         timeout: 30000
                     });
                     
-                    // Interval tambahan untuk ambil data angin (refresh setiap 5 menit)
+                    // Interval untuk refresh data (setiap 3 detik kirim lokasi, setiap 5 menit refresh wind)
                     intervalId = setInterval(() => {
                         if (isSharing && lastLocation) {
+                            // Refresh wind data setiap 5 menit
                             fetchWindData(lastLocation.lat, lastLocation.lng);
+                            
+                            // Refresh altitude juga kadang-kadang
+                            if (Math.random() > 0.7) { // 30% chance refresh altitude
+                                fetchAltitude(lastLocation.lat, lastLocation.lng);
+                            }
                         }
                     }, 300000); // 5 menit
                 },
@@ -774,7 +870,7 @@
         
         // ========== MQTT HANDLER ==========
         client.on('connect', () => {
-            console.log('✅✅✅ Proto driver CONNECTED to MQTT!');
+            console.log('✅✅✅ Urban Pro CONNECTED to MQTT!');
             const statusEl = document.getElementById('mqttStatus');
             if (statusEl) {
                 statusEl.innerHTML = '✅ Connected';
@@ -783,7 +879,7 @@
         });
         
         client.on('disconnect', () => {
-            console.log('❌ Proto driver disconnected');
+            console.log('❌ Urban Pro disconnected');
             const statusEl = document.getElementById('mqttStatus');
             if (statusEl) {
                 statusEl.innerHTML = '📡 Disconnected';
@@ -812,7 +908,7 @@
             }
         });
         
-        console.log('🚗 Proto driver with Wind + Altitude ready');
+        console.log('🚗 Urban Pro with Wind + Altitude ready');
     </script>
 </body>
 </html>
