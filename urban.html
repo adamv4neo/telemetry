@@ -21,7 +21,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <style>
-        /* ===== CSS SAMA PERSIS DENGAN FILE LAMA ===== */
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 
         :root {
@@ -1223,7 +1222,8 @@
             isMapInitialized = true;
         }
 
-        // ========== VARIABEL ANTI-BLINK ==========
+        // ========== VARIABEL UNTUK ANTI-BLINK ==========
+        // Nilai terakhir yang valid
         let lastValidSpeed = 0;
         let lastValidRpm = 0;
         let lastValidAfr = 14.7;
@@ -1231,14 +1231,19 @@
         let lastValidTemp = 0;
         let lastValidAltitude = 0;
         
-        let lastValidSpeedTime = Date.now();
-        let lastValidRpmTime = Date.now();
+        // Timestamp kapan terakhir menerima data valid
+        let lastValidSpeedTime = 0;
+        let lastValidRpmTime = 0;
+        let lastValidAfrTime = 0;
+        let lastValidTpsTime = 0;
+        let lastValidTempTime = 0;
+        let lastValidAltitudeTime = 0;
+        
+        // Flag untuk AFR pertama kali
         let validAfrReceived = false;
-        let lastValidTpsTime = Date.now();
-        let lastValidTempTime = Date.now();
-        let lastValidAltitudeTime = Date.now();
 
-        const DATA_TIMEOUT = 2000; // 2 detik
+        // Threshold waktu (ms) - jika tidak ada data dalam waktu ini, tetap tampilkan nilai terakhir
+        const DATA_TIMEOUT = 3000; // 3 detik
 
         function updateLocation(lat, lng, accuracy = 25, speed = 0) {
             if (lastLocation && 
@@ -1497,49 +1502,62 @@
         let maxRpm = 0;
         let maxAltitude = 0;
 
-        // ========== GAUGE UPDATE FUNCTIONS (ANTI-BLINK) ==========
+        // ========== FUNGSI ANTI-BLINK ==========
         function setGaugeReady(el) {
             if (el) el.classList.remove('no-data');
         }
 
+        // ===== SPEED - FIXED NO BLINK =====
         function updateSpeed(val) {
-            const numVal = parseInt(val);
-            const now = Date.now();
+            // CEK: Apakah data valid? (bisa 0 tapi bukan null/undefined/NaN)
+            const isValid = val !== null && val !== undefined && val !== '' && !isNaN(val);
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '';
-            
-            if (isDataValid) {
+            if (isValid) {
+                const numVal = parseInt(val);
                 lastValidSpeed = numVal;
-                lastValidSpeedTime = now;
+                lastValidSpeedTime = Date.now();
             }
             
-            let displayValue = lastValidSpeed;
-            
+            // Tampilkan nilai terakhir jika pernah valid
             const speedEl = document.getElementById('speedValue');
+            const speedBar = document.getElementById('speedBar');
+            const badge = document.getElementById('speedBadge');
+            
+            if (lastValidSpeedTime === 0) {
+                // Belum pernah dapat data
+                if (speedEl) {
+                    speedEl.textContent = '--';
+                    speedEl.classList.add('no-data');
+                }
+                if (badge) badge.textContent = '--';
+                return;
+            }
+            
+            // Update UI dengan nilai terakhir
             if (speedEl) {
                 setGaugeReady(speedEl);
-                speedEl.textContent = displayValue;
+                speedEl.textContent = lastValidSpeed;
             }
             
-            const speedBar = document.getElementById('speedBar');
-            if (speedBar) speedBar.style.width = Math.min(100, displayValue / 2) + '%';
-
-            if (displayValue > maxSpeed) {
-                maxSpeed = displayValue;
-                document.getElementById('maxSpeed').textContent = displayValue;
+            if (speedBar) {
+                speedBar.style.width = Math.min(100, lastValidSpeed / 2) + '%';
             }
 
-            const badge = document.getElementById('speedBadge');
+            if (lastValidSpeed > maxSpeed) {
+                maxSpeed = lastValidSpeed;
+                document.getElementById('maxSpeed').textContent = lastValidSpeed;
+            }
+
             if (badge) {
-                if (displayValue === 0) { 
+                if (lastValidSpeed === 0) { 
                     badge.textContent = 'IDLE'; 
                     badge.className = 'gauge-badge'; 
                 }
-                else if (displayValue < 80) { 
+                else if (lastValidSpeed < 80) { 
                     badge.textContent = 'NORMAL'; 
                     badge.className = 'gauge-badge'; 
                 }
-                else if (displayValue < 140) { 
+                else if (lastValidSpeed < 140) { 
                     badge.textContent = 'FAST'; 
                     badge.className = 'gauge-badge warn'; 
                 }
@@ -1549,44 +1567,53 @@
                 }
             }
 
-            shiftPush(speedData, displayValue);
+            shiftPush(speedData, lastValidSpeed);
             speedRpmChart.update('none');
         }
 
+        // ===== RPM - FIXED NO BLINK =====
         function updateRpm(val) {
-            const numVal = parseInt(val);
-            const now = Date.now();
+            const isValid = val !== null && val !== undefined && val !== '' && !isNaN(val);
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '';
-            
-            if (isDataValid) {
+            if (isValid) {
+                const numVal = parseInt(val);
                 lastValidRpm = numVal;
-                lastValidRpmTime = now;
+                lastValidRpmTime = Date.now();
             }
-            
-            let displayValue = lastValidRpm;
             
             const rpmEl = document.getElementById('rpmValue');
-            if (rpmEl) {
-                setGaugeReady(rpmEl);
-                rpmEl.textContent = displayValue;
+            const rpmBar = document.getElementById('rpmBar');
+            const badge = document.getElementById('rpmBadge');
+            
+            if (lastValidRpmTime === 0) {
+                if (rpmEl) {
+                    rpmEl.textContent = '--';
+                    rpmEl.classList.add('no-data');
+                }
+                if (badge) badge.textContent = '--';
+                return;
             }
             
-            const rpmBar = document.getElementById('rpmBar');
-            if (rpmBar) rpmBar.style.width = Math.min(100, displayValue / 120) + '%';
-
-            if (displayValue > maxRpm) {
-                maxRpm = displayValue;
-                document.getElementById('maxRpm').textContent = displayValue;
+            if (rpmEl) {
+                setGaugeReady(rpmEl);
+                rpmEl.textContent = lastValidRpm;
+            }
+            
+            if (rpmBar) {
+                rpmBar.style.width = Math.min(100, lastValidRpm / 120) + '%';
             }
 
-            const badge = document.getElementById('rpmBadge');
+            if (lastValidRpm > maxRpm) {
+                maxRpm = lastValidRpm;
+                document.getElementById('maxRpm').textContent = lastValidRpm;
+            }
+
             if (badge) {
-                if (displayValue < 3000) { 
+                if (lastValidRpm < 3000) { 
                     badge.textContent = 'LOW'; 
                     badge.className = 'gauge-badge'; 
                 }
-                else if (displayValue < 7000) { 
+                else if (lastValidRpm < 7000) { 
                     badge.textContent = 'MID'; 
                     badge.className = 'gauge-badge warn'; 
                 }
@@ -1596,24 +1623,20 @@
                 }
             }
 
-            shiftPush(rpmData, displayValue / 100);
+            shiftPush(rpmData, lastValidRpm / 100);
             speedRpmChart.update('none');
         }
 
+        // ===== AFR - FIXED NO BLINK =====
         function updateAfr(val) {
-            const numVal = parseFloat(val);
-            const now = Date.now();
+            const isValid = val !== null && val !== undefined && val !== '' && !isNaN(val) && val >= 10 && val <= 20;
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 10 && numVal <= 20;
-            
-            if (isDataValid) {
+            if (isValid) {
+                const numVal = parseFloat(val);
                 lastValidAfr = numVal;
-                lastValidAfrTime = now;
+                lastValidAfrTime = Date.now();
                 validAfrReceived = true;
             }
-            
-            let displayValue = lastValidAfr;
-            let displayText = validAfrReceived ? displayValue.toFixed(1) : '--';
             
             const el = document.getElementById('afrValue');
             const badge = document.getElementById('afrBadge');
@@ -1631,20 +1654,20 @@
             
             if (el) {
                 setGaugeReady(el);
-                el.textContent = displayText;
+                el.textContent = lastValidAfr.toFixed(1);
             }
             
             if (afrBar) {
-                const barWidth = Math.min(100, Math.max(0, ((displayValue - 10) / 10) * 100));
+                const barWidth = Math.min(100, Math.max(0, ((lastValidAfr - 10) / 10) * 100));
                 afrBar.style.width = barWidth + '%';
             }
 
             if (badge) {
-                if (displayValue < 12) {
+                if (lastValidAfr < 12) {
                     if (el) el.style.color = '#ff4444';
                     badge.textContent = 'RICH';
                     badge.className = 'gauge-badge danger';
-                } else if (displayValue > 16) {
+                } else if (lastValidAfr > 16) {
                     if (el) el.style.color = '#ffaa00';
                     badge.textContent = 'LEAN';
                     badge.className = 'gauge-badge warn';
@@ -1655,42 +1678,52 @@
                 }
             }
 
-            shiftPush(afrData, displayValue);
+            shiftPush(afrData, lastValidAfr);
             afrChart.update('none');
         }
 
+        // ===== TPS - FIXED NO BLINK =====
         function updateTps(val) {
-            const numVal = parseInt(val);
-            const now = Date.now();
+            const isValid = val !== null && val !== undefined && val !== '' && !isNaN(val) && val >= 0 && val <= 100;
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0 && numVal <= 100;
-            
-            if (isDataValid) {
+            if (isValid) {
+                const numVal = parseInt(val);
                 lastValidTps = numVal;
-                lastValidTpsTime = now;
+                lastValidTpsTime = Date.now();
             }
-            
-            let displayValue = lastValidTps;
             
             const tpsEl = document.getElementById('tpsValue');
-            if (tpsEl) {
-                setGaugeReady(tpsEl);
-                tpsEl.textContent = displayValue;
+            const tpsBar = document.getElementById('tpsBar');
+            const badge = document.getElementById('tpsBadge');
+            
+            if (lastValidTpsTime === 0) {
+                if (tpsEl) {
+                    tpsEl.textContent = '--';
+                    tpsEl.classList.add('no-data');
+                }
+                if (badge) badge.textContent = '--';
+                document.getElementById('engineLoad').textContent = '--';
+                return;
             }
             
-            const tpsBar = document.getElementById('tpsBar');
-            if (tpsBar) tpsBar.style.width = displayValue + '%';
+            if (tpsEl) {
+                setGaugeReady(tpsEl);
+                tpsEl.textContent = lastValidTps;
+            }
+            
+            if (tpsBar) {
+                tpsBar.style.width = lastValidTps + '%';
+            }
 
-            const load = Math.min(100, Math.round(displayValue * 0.8 + 20));
+            const load = Math.min(100, Math.round(lastValidTps * 0.8 + 20));
             document.getElementById('engineLoad').textContent = load;
 
-            const badge = document.getElementById('tpsBadge');
             if (badge) {
-                if (displayValue < 30) { 
+                if (lastValidTps < 30) { 
                     badge.textContent = 'LIGHT'; 
                     badge.className = 'gauge-badge'; 
                 }
-                else if (displayValue < 70) { 
+                else if (lastValidTps < 70) { 
                     badge.textContent = 'MED'; 
                     badge.className = 'gauge-badge warn'; 
                 }
@@ -1700,39 +1733,48 @@
                 }
             }
 
-            shiftPush(tpsData, displayValue);
+            shiftPush(tpsData, lastValidTps);
             tpsChart.update('none');
         }
 
+        // ===== TEMP - FIXED NO BLINK =====
         function updateTemp(val) {
-            const numVal = parseInt(val);
-            const now = Date.now();
+            const isValid = val !== null && val !== undefined && val !== '' && !isNaN(val) && val >= 0;
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
-            
-            if (isDataValid) {
+            if (isValid) {
+                const numVal = parseInt(val);
                 lastValidTemp = numVal;
-                lastValidTempTime = now;
+                lastValidTempTime = Date.now();
             }
             
-            let displayValue = lastValidTemp;
-
             const tempEl = document.getElementById('tempValue');
-            if (tempEl) {
-                setGaugeReady(tempEl);
-                tempEl.textContent = displayValue;
-            }
-            
             const tempBar = document.getElementById('tempBar');
-            if (tempBar) tempBar.style.width = Math.min(100, (displayValue / 120) * 100) + '%';
-
-            document.getElementById('tempBigValue').textContent = displayValue;
-
             const badge = document.getElementById('tempBadge');
             const statusBadge = document.getElementById('tempStatusBadge');
+            
+            if (lastValidTempTime === 0) {
+                if (tempEl) {
+                    tempEl.textContent = '--';
+                    tempEl.classList.add('no-data');
+                }
+                if (badge) badge.textContent = '--';
+                document.getElementById('tempBigValue').textContent = '--';
+                return;
+            }
+            
+            if (tempEl) {
+                setGaugeReady(tempEl);
+                tempEl.textContent = lastValidTemp;
+            }
+            
+            if (tempBar) {
+                tempBar.style.width = Math.min(100, (lastValidTemp / 120) * 100) + '%';
+            }
+
+            document.getElementById('tempBigValue').textContent = lastValidTemp;
 
             if (badge) {
-                if (displayValue < 70) {
+                if (lastValidTemp < 70) {
                     badge.textContent = 'COLD';
                     badge.className = 'gauge-badge';
                     if (statusBadge) {
@@ -1740,7 +1782,7 @@
                         statusBadge.style.color = '#44ccff';
                         statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> COLD — WARMING UP';
                     }
-                } else if (displayValue < 95) {
+                } else if (lastValidTemp < 95) {
                     badge.textContent = 'NORMAL';
                     badge.className = 'gauge-badge';
                     if (statusBadge) {
@@ -1748,7 +1790,7 @@
                         statusBadge.style.color = '#00ff88';
                         statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> NORMAL OPERATING TEMP';
                     }
-                } else if (displayValue < 110) {
+                } else if (lastValidTemp < 110) {
                     badge.textContent = 'WARM';
                     badge.className = 'gauge-badge warn';
                     if (statusBadge) {
@@ -1767,54 +1809,61 @@
                 }
             }
 
-            shiftPush(tempHistData, displayValue);
+            shiftPush(tempHistData, lastValidTemp);
             tempChart.update('none');
         }
 
+        // ===== ALTITUDE - FIXED NO BLINK =====
         function updateAltitude(val) {
-            const numVal = parseInt(val);
-            const now = Date.now();
+            const isValid = val !== null && val !== undefined && val !== '' && !isNaN(val) && val >= 0;
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
-            
-            if (isDataValid) {
+            if (isValid) {
+                const numVal = parseInt(val);
                 lastValidAltitude = numVal;
-                lastValidAltitudeTime = now;
+                lastValidAltitudeTime = Date.now();
             }
-            
-            let displayValue = lastValidAltitude;
             
             const altEl = document.getElementById('altitudeValue');
-            if (altEl) {
-                setGaugeReady(altEl);
-                altEl.textContent = displayValue;
-            }
-            
             const altBar = document.getElementById('altitudeBar');
-            if (altBar) {
-                const barWidth = Math.min(100, (displayValue / 3000) * 100);
-                altBar.style.width = barWidth + '%';
-            }
-            
-            document.getElementById('altitudeBigValue').textContent = displayValue;
-            
-            if (displayValue > maxAltitude) {
-                maxAltitude = displayValue;
-            }
-            
             const badge = document.getElementById('altitudeBadge');
             const statusBadge = document.getElementById('altitudeStatusBadge');
             
+            if (lastValidAltitudeTime === 0) {
+                if (altEl) {
+                    altEl.textContent = '--';
+                    altEl.classList.add('no-data');
+                }
+                if (badge) badge.textContent = 'MSL';
+                document.getElementById('altitudeBigValue').textContent = '--';
+                return;
+            }
+            
+            if (altEl) {
+                setGaugeReady(altEl);
+                altEl.textContent = lastValidAltitude;
+            }
+            
+            if (altBar) {
+                const barWidth = Math.min(100, (lastValidAltitude / 3000) * 100);
+                altBar.style.width = barWidth + '%';
+            }
+            
+            document.getElementById('altitudeBigValue').textContent = lastValidAltitude;
+            
+            if (lastValidAltitude > maxAltitude) {
+                maxAltitude = lastValidAltitude;
+            }
+            
             if (badge) {
-                if (displayValue < 500) {
+                if (lastValidAltitude < 500) {
                     badge.textContent = 'RENDAH';
                     badge.className = 'gauge-badge';
                     if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN RENDAH';
-                } else if (displayValue < 1000) {
+                } else if (lastValidAltitude < 1000) {
                     badge.textContent = 'SEDANG';
                     badge.className = 'gauge-badge warn';
                     if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN TINGGI';
-                } else if (displayValue < 2000) {
+                } else if (lastValidAltitude < 2000) {
                     badge.textContent = 'TINGGI';
                     badge.className = 'gauge-badge warn';
                     if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> PEGUNUNGAN';
@@ -1825,7 +1874,7 @@
                 }
             }
             
-            shiftPush(altitudeData, displayValue);
+            shiftPush(altitudeData, lastValidAltitude);
             altitudeChart.update('none');
         }
 
@@ -1834,12 +1883,12 @@
             const tbody = document.getElementById('sensorLog');
             const timeStr = new Date().toLocaleTimeString('id-ID');
 
-            const speed = data.kecepatan ?? lastValidSpeed;
-            const rpm = data.rpm_coil ?? lastValidRpm;
+            const speed = data.kecepatan ?? (lastValidSpeedTime > 0 ? lastValidSpeed : '--');
+            const rpm = data.rpm_coil ?? (lastValidRpmTime > 0 ? lastValidRpm : '--');
             const afr = data.afr_etanol != null ? data.afr_etanol.toFixed(1) : (validAfrReceived ? lastValidAfr.toFixed(1) : '--');
-            const tps = data.throttle ?? lastValidTps;
-            const temp = data.suhu ?? lastValidTemp;
-            const alt = data.altitude ?? data.ketinggian ?? lastValidAltitude;
+            const tps = data.throttle ?? (lastValidTpsTime > 0 ? lastValidTps : '--');
+            const temp = data.suhu ?? (lastValidTempTime > 0 ? lastValidTemp : '--');
+            const alt = data.altitude ?? data.ketinggian ?? (lastValidAltitudeTime > 0 ? lastValidAltitude : '--');
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -1859,7 +1908,7 @@
             }
         }
 
-        // ========== MQTT HANDLERS (STRUCTURE DARI FILE LAMA) ==========
+        // ========== MQTT HANDLERS ==========
         client.on('connect', () => {
             console.log('✅ Connected to MQTT');
             document.getElementById('statusDot').className = 'dot online';
@@ -1888,7 +1937,7 @@
             if (topic === 'location/urban/coordinates') {
                 try {
                     const loc = JSON.parse(value);
-                    if (loc.lat && loc.lng) {
+                    if (loc.lat && loc.lng && !isNaN(loc.lat) && !isNaN(loc.lng)) {
                         updateLocation(
                             parseFloat(loc.lat),
                             parseFloat(loc.lng),
@@ -1901,22 +1950,22 @@
                     if (parts.length >= 2) {
                         const lat = parseFloat(parts[0]);
                         const lng = parseFloat(parts[1]);
-                        if (!isNaN(lat) && !isNaN(lng)) {
+                        if (!isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0)) {
                             updateLocation(lat, lng, parts[2] ? parseFloat(parts[2]) : 25, parts[3] ? parseFloat(parts[3]) : 0);
                         }
                     }
                 }
-                return; // Stop here for GPS topic
+                return;
             }
 
             // ===== SENSOR DATA HANDLER =====
             // Handle individual topics
-            if (topic === 'semeru/urban/speed') updateSpeed(value);
-            if (topic === 'semeru/urban/rpm') updateRpm(value);
-            if (topic === 'semeru/urban/afr') updateAfr(value);
-            if (topic === 'semeru/urban/tps') updateTps(value);
-            if (topic === 'semeru/urban/temp') updateTemp(value);
-            if (topic === 'semeru/urban/altitude') updateAltitude(value);
+            if (topic === 'semeru/urban/speed' || topic === 'semeru/proto/speed') updateSpeed(value);
+            if (topic === 'semeru/urban/rpm' || topic === 'semeru/proto/rpm') updateRpm(value);
+            if (topic === 'semeru/urban/afr' || topic === 'semeru/proto/afr') updateAfr(value);
+            if (topic === 'semeru/urban/tps' || topic === 'semeru/proto/tps') updateTps(value);
+            if (topic === 'semeru/urban/temp' || topic === 'semeru/proto/temp') updateTemp(value);
+            if (topic === 'semeru/urban/altitude' || topic === 'semeru/proto/altitude') updateAltitude(value);
 
             // Handle JSON data (format ESP)
             if (topic === 'semeru/urban/data' || topic === 'semeru/proto/data') {
@@ -1931,23 +1980,23 @@
                     }
                     
                     // Update semua sensor
-                    if (data.kecepatan != null) updateSpeed(data.kecepatan);
-                    if (data.rpm_coil != null) updateRpm(data.rpm_coil);
-                    if (data.afr_etanol != null) updateAfr(data.afr_etanol);
-                    if (data.throttle != null) updateTps(data.throttle);
-                    if (data.suhu != null) updateTemp(data.suhu);
-                    if (data.altitude != null) updateAltitude(data.altitude);
+                    if (data.kecepatan !== undefined && data.kecepatan !== null) updateSpeed(data.kecepatan);
+                    if (data.rpm_coil !== undefined && data.rpm_coil !== null) updateRpm(data.rpm_coil);
+                    if (data.afr_etanol !== undefined && data.afr_etanol !== null) updateAfr(data.afr_etanol);
+                    if (data.throttle !== undefined && data.throttle !== null) updateTps(data.throttle);
+                    if (data.suhu !== undefined && data.suhu !== null) updateTemp(data.suhu);
+                    if (data.altitude !== undefined && data.altitude !== null) updateAltitude(data.altitude);
                     
                     updateSensorLog(data);
                 } catch (e) {
-                    console.log('Parse error (bukan JSON):', e.message);
+                    // Bukan JSON, abaikan
                 }
             }
         });
 
         // ========== INITIALIZE ==========
         initMap();
-        console.log('🚗 Urban Dashboard ready (anti-blink version)');
+        console.log('🚗 Urban Dashboard ready (NO BLINK version)');
     </script>
 </body>
 </html>
