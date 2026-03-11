@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
-    <title>AKASA EVO 3</title>
+    <title>AKASA EVO 3 - URBAN DASHBOARD</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -29,6 +29,7 @@
             --blue-border: rgba(47,0,255,0.25);
             --red: #ff3d3d;
             --green: #00ff88;
+            --cyan: #44ccff;
             --bg-deep: #070b14;
             --bg-card: rgba(12, 18, 32, 0.95);
             --text-muted: #5a7a9a;
@@ -339,7 +340,7 @@
 
         .gauge-card.afr-card::before { background: linear-gradient(90deg, var(--red), #ff8844); }
         .gauge-card.temp-card::before { background: linear-gradient(90deg, #ff6622, #ffaa00); }
-        .gauge-card.altitude-card::before { background: linear-gradient(90deg, #44ccff, #88ddff); }
+        .gauge-card.altitude-card::before { background: linear-gradient(90deg, var(--cyan), #88ddff); }
 
         .gauge-label {
             font-size: 10px;
@@ -355,7 +356,7 @@
         .gauge-label i { color: var(--blue); font-size: 14px; }
         .gauge-card.afr-card .gauge-label i { color: var(--red); }
         .gauge-card.temp-card .gauge-label i { color: #ff7722; }
-        .gauge-card.altitude-card .gauge-label i { color: #44ccff; }
+        .gauge-card.altitude-card .gauge-label i { color: var(--cyan); }
 
         .gauge-value {
             font-family: 'Orbitron', sans-serif;
@@ -369,9 +370,9 @@
         .gauge-card.speed-card .gauge-value { color: var(--blue); }
         .gauge-card.rpm-card .gauge-value { color: #ffcc44; }
         .gauge-card.afr-card .gauge-value { color: var(--green); }
-        .gauge-card.tps-card .gauge-value { color: #44ccff; }
+        .gauge-card.tps-card .gauge-value { color: var(--cyan); }
         .gauge-card.temp-card .gauge-value { color: #ff9933; }
-        .gauge-card.altitude-card .gauge-value { color: #44ccff; }
+        .gauge-card.altitude-card .gauge-value { color: var(--cyan); }
 
         .gauge-unit-row {
             display: flex;
@@ -425,9 +426,9 @@
         }
 
         .gauge-card.afr-card .gauge-bar-fill { background: linear-gradient(90deg, var(--red), #ff8844); }
-        .gauge-card.tps-card .gauge-bar-fill { background: linear-gradient(90deg, #0099ff, #44ccff); }
+        .gauge-card.tps-card .gauge-bar-fill { background: linear-gradient(90deg, #0099ff, var(--cyan)); }
         .gauge-card.temp-card .gauge-bar-fill { background: linear-gradient(90deg, #ff6622, #ffaa00); }
-        .gauge-card.altitude-card .gauge-bar-fill { background: linear-gradient(90deg, #44ccff, #88ddff); }
+        .gauge-card.altitude-card .gauge-bar-fill { background: linear-gradient(90deg, var(--cyan), #88ddff); }
 
         .gauge-value.no-data {
             color: var(--text-muted) !important;
@@ -472,7 +473,7 @@
         .chart-card.afr-chart::before { background: linear-gradient(90deg, var(--red), transparent); }
         .chart-card.tps-chart::before { background: linear-gradient(90deg, #0099ff, transparent); }
         .chart-card.temp-chart::before { background: linear-gradient(90deg, #ff6622, transparent); }
-        .chart-card.altitude-chart::before { background: linear-gradient(90deg, #44ccff, transparent); }
+        .chart-card.altitude-chart::before { background: linear-gradient(90deg, var(--cyan), transparent); }
 
         .chart-title {
             font-size: 11px;
@@ -487,9 +488,9 @@
 
         .chart-title i { color: var(--blue); }
         .chart-card.afr-chart .chart-title i { color: var(--red); }
-        .chart-card.tps-chart .chart-title i { color: #44ccff; }
+        .chart-card.tps-chart .chart-title i { color: var(--cyan); }
         .chart-card.temp-chart .chart-title i { color: #ff9933; }
-        .chart-card.altitude-chart .chart-title i { color: #44ccff; }
+        .chart-card.altitude-chart .chart-title i { color: var(--cyan); }
 
         .chart-timeframe {
             font-size: 10px;
@@ -621,10 +622,10 @@
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #44ccff, #88ddff);
+            background: linear-gradient(90deg, var(--cyan), #88ddff);
         }
 
-        .altitude-number-card .number-main-value { color: #44ccff; }
+        .altitude-number-card .number-main-value { color: var(--cyan); }
 
         /* ========== SENSOR GRID ========== */
         .sensor-grid {
@@ -792,6 +793,49 @@
             letter-spacing: 1px;
         }
 
+        /* ========== WIND INDICATOR (NEW) ========== */
+        .wind-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(68,204,255,0.1);
+            padding: 8px 15px;
+            border-radius: 30px;
+            border: 1px solid rgba(68,204,255,0.3);
+        }
+
+        .wind-compass-small {
+            width: 30px;
+            height: 30px;
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .wind-compass-small::before {
+            content: '↑';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(var(--wind-rotate, 0deg));
+            color: var(--cyan);
+            font-size: 14px;
+        }
+
+        .wind-info-small {
+            font-size: 12px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .wind-speed-small {
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .wind-dir-small {
+            color: var(--text-muted);
+        }
+
         /* ========== RESPONSIVE ========== */
         @media (max-width: 1200px) {
             .gauge-grid { grid-template-columns: repeat(3, 1fr); }
@@ -820,7 +864,7 @@
     <!-- NAVBAR -->
     <div class="navbar">
         <div class="nav-left">
-            <a href="index.html" class="back-btn">
+            <a href="#" class="back-btn" onclick="history.back()">
                 <i class="fas fa-arrow-left"></i> BACK
             </a>
             <div class="car-info">
@@ -829,11 +873,21 @@
                 </div>
                 <div class="car-title">
                     <h2>URBAN</h2>
-                    <span>Daily Driver</span>
+                    <span>Daily Driver Pro</span>
                 </div>
             </div>
         </div>
         <div class="nav-right">
+            <!-- Wind Indicator (New) -->
+            <div class="wind-indicator" id="windIndicator" style="display: none;">
+                <div class="wind-compass-small" id="windCompassSmall" style="--wind-rotate: 0deg"></div>
+                <div class="wind-info-small">
+                    <span class="wind-speed-small" id="windSpeedSmall">--</span>
+                    <span class="wind-unit-small">km/h</span>
+                    <span class="wind-dir-small" id="windDirSmall">N</span>
+                </div>
+            </div>
+            
             <div class="connection-status">
                 <span class="dot offline" id="statusDot"></span>
                 <span id="statusText">OFFLINE</span>
@@ -855,7 +909,7 @@
                 <div class="map-header">
                     <div class="map-header-left">
                         <i class="fas fa-map-marked-alt"></i>
-                        Live Location — Urban Driver
+                        Live Location — Urban Driver Pro
                     </div>
                     <div class="driver-status" id="driverStatus">
                         <i class="fas fa-circle" style="color: var(--blue); font-size: 8px;"></i>
@@ -964,7 +1018,7 @@
                     </div>
                 </div>
 
-                <!-- ALTITUDE -->
+                <!-- ALTITUDE (FIXED) -->
                 <div class="gauge-card altitude-card">
                     <div class="gauge-label">
                         <span>ALTITUDE</span>
@@ -1041,9 +1095,9 @@
                             <div style="font-size:11px;color:var(--text-muted)">menit</div>
                         </div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">ENGINE LOAD</div>
-                            <div style="font-family:'Orbitron'; font-size:26px; color:#44ccff;" id="engineLoad">--</div>
-                            <div style="font-size:11px;color:var(--text-muted)">%</div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">MAX ALTITUDE</div>
+                            <div style="font-family:'Orbitron'; font-size:26px; color:var(--cyan);" id="maxAltitude">--</div>
+                            <div style="font-size:11px;color:var(--text-muted)">mdpl</div>
                         </div>
                     </div>
                 </div>
@@ -1079,19 +1133,19 @@
                 </div>
             </div>
 
-            <!-- ALTITUDE SECTION -->
-            <div class="section-label" style="margin-top:20px;"><i class="fas fa-mountain" style="color:#44ccff"></i> ALTITUDE TRACKING</div>
+            <!-- ALTITUDE SECTION (FIXED) -->
+            <div class="section-label" style="margin-top:20px;"><i class="fas fa-mountain" style="color:var(--cyan)"></i> ALTITUDE TRACKING</div>
             <div class="temp-row">
                 <!-- Altitude Number Card -->
                 <div class="altitude-number-card" id="altitudeNumberCard">
-                    <div class="number-label" style="color:#44ccff;">
+                    <div class="number-label" style="color:var(--cyan);">
                         <i class="fas fa-mountain"></i> KETINGGIAN
                     </div>
                     <div>
-                        <span class="number-main-value" id="altitudeBigValue" style="color:#44ccff;">--</span>
+                        <span class="number-main-value" id="altitudeBigValue" style="color:var(--cyan);">--</span>
                         <span class="temp-unit-big">mdpl</span>
                     </div>
-                    <div class="number-status-badge" id="altitudeStatusBadge" style="background:rgba(68,204,255,0.12); color:#44ccff; border-color:rgba(68,204,255,0.25);">
+                    <div class="number-status-badge" id="altitudeStatusBadge" style="background:rgba(68,204,255,0.12); color:var(--cyan); border-color:rgba(68,204,255,0.25);">
                         <i class="fas fa-circle" style="font-size:7px;"></i>
                         MENUNGGU DATA
                     </div>
@@ -1100,7 +1154,7 @@
                 <!-- Altitude Chart -->
                 <div class="chart-card altitude-chart">
                     <div class="chart-title">
-                        <span><i class="fas fa-chart-line" style="color:#44ccff"></i> &nbsp; ALTITUDE HISTORY — 30 DETIK TERAKHIR</span>
+                        <span><i class="fas fa-chart-line" style="color:var(--cyan)"></i> &nbsp; ALTITUDE HISTORY — 30 DETIK TERAKHIR</span>
                         <span class="chart-timeframe">30s</span>
                     </div>
                     <div style="position:relative; height: 160px;">
@@ -1110,8 +1164,40 @@
             </div>
         </div>
 
-        <!-- SENSOR GRID -->
+        <!-- SENSOR GRID (WIND + WEATHER) -->
         <div class="sensor-grid">
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-wind"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">WIND SPEED</div>
+                    <div>
+                        <span class="sensor-value" id="windSpeedValue">--</span>
+                        <span class="sensor-unit">km/h</span>
+                    </div>
+                    <div class="sensor-trend" id="windDirectionDisplay">
+                        <i class="fas fa-compass"></i> Arah: --
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-temperature-low"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">AIR TEMP</div>
+                    <div>
+                        <span class="sensor-value" id="airTempValue">--</span>
+                        <span class="sensor-unit">°C</span>
+                    </div>
+                    <div class="sensor-trend" id="weatherDesc">
+                        <i class="fas fa-cloud"></i> Cuaca: --
+                    </div>
+                </div>
+            </div>
+            
             <div class="sensor-card">
                 <div class="sensor-icon">
                     <i class="fas fa-stopwatch"></i>
@@ -1121,6 +1207,19 @@
                     <div>
                         <span class="sensor-value" id="runTimeSmall">0:00</span>
                         <span class="sensor-unit">menit</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-gauge-high"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">ENGINE LOAD</div>
+                    <div>
+                        <span class="sensor-value" id="engineLoad">--</span>
+                        <span class="sensor-unit">%</span>
                     </div>
                 </div>
             </div>
@@ -1147,6 +1246,7 @@
                             <th>TPS</th>
                             <th>TEMP</th>
                             <th>ALTITUDE</th>
+                            <th>WIND</th>
                             <th>STATUS</th>
                         </tr>
                     </thead>
@@ -1159,6 +1259,7 @@
                             <td>--%</td>
                             <td>--°C</td>
                             <td>-- m</td>
+                            <td>-- km/h</td>
                             <td style="color:var(--text-muted);">STANDBY</td>
                         </tr>
                     </tbody>
@@ -1171,14 +1272,14 @@
     <div class="footer">
         <div class="footer-gem"><i class="fas fa-gem"></i></div>
         <div class="footer-title">NO PRESSURE NO DIAMOND</div>
-        <div class="footer-sub">Urban Division · Real-time GPS from Driver's Phone</div>
+        <div class="footer-sub">Urban Division Pro · Real-time GPS + Wind + Altitude from Driver's Phone</div>
     </div>
 
     <script>
         // ========== MQTT CONFIGURATION ==========
         const MQTT_BROKER = 'wss://broker.emqx.io:8084/mqtt';
         const MQTT_OPTIONS = {
-            clientId: 'urban_dash_' + Math.random().toString(16).substring(2, 10),
+            clientId: 'urban_dash_pro_' + Math.random().toString(16).substring(2, 10),
             clean: true,
             reconnectPeriod: 3000
         };
@@ -1229,15 +1330,20 @@
         let lastValidTps = 0;
         let lastValidTemp = 0;
         let lastValidAltitude = 0;
-
+        let lastValidWindSpeed = 0;
+        let lastValidWindDirection = 0;
+        let lastValidWindDirectionText = 'N';
+        let lastValidAirTemp = 0;
+        let lastValidWeatherDesc = '--';
+        
         // Timestamp untuk track kapan terakhir receive data valid
         let lastValidSpeedTime = Date.now();
         let lastValidRpmTime = Date.now();
-        let lastValidAfrTime = Date.now();
         let validAfrReceived = false;
         let lastValidTpsTime = Date.now();
         let lastValidTempTime = Date.now();
         let lastValidAltitudeTime = Date.now();
+        let lastValidWindTime = Date.now();
 
         // Threshold waktu (ms)
         const DATA_TIMEOUT = 2000; // 2 detik
@@ -1274,6 +1380,56 @@
             } catch (e) {
                 console.error('Map update error:', e);
             }
+        }
+
+        // ========== FUNGSI KONVERSI ARAH ANGIN ==========
+        function degreeToCompass(deg) {
+            const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+            const index = Math.round(deg / 22.5) % 16;
+            return directions[index];
+        }
+
+        function getWindDescription(speed) {
+            if (speed < 5) return 'Tenang';
+            if (speed < 15) return 'Sedikit hembusan';
+            if (speed < 25) return 'Sedang';
+            if (speed < 35) return 'Kencang';
+            if (speed < 45) return 'Kuat';
+            return 'Berbahaya';
+        }
+
+        function getWeatherDescription(code) {
+            const weatherCodes = {
+                0: 'Cerah', 1: 'Cerah', 2: 'Berawan', 3: 'Mendung',
+                45: 'Kabut', 48: 'Kabut', 51: 'Gerimis', 53: 'Gerimis',
+                55: 'Gerimis', 61: 'Hujan', 63: 'Hujan', 65: 'Hujan',
+                80: 'Hujan', 81: 'Hujan', 82: 'Hujan', 95: 'Badai'
+            };
+            return weatherCodes[code] || '--';
+        }
+
+        // ========== UPDATE WIND UI ==========
+        function updateWindUI(windData) {
+            if (!windData) return;
+            
+            lastValidWindSpeed = windData.speed || 0;
+            lastValidWindDirection = windData.direction || 0;
+            lastValidWindDirectionText = degreeToCompass(lastValidWindDirection);
+            lastValidAirTemp = windData.temperature || 0;
+            lastValidWeatherDesc = getWeatherDescription(windData.weatherCode);
+            lastValidWindTime = Date.now();
+            
+            // Update wind indicator di navbar
+            document.getElementById('windIndicator').style.display = 'flex';
+            document.getElementById('windCompassSmall').style.setProperty('--wind-rotate', lastValidWindDirection + 'deg');
+            document.getElementById('windSpeedSmall').textContent = lastValidWindSpeed;
+            document.getElementById('windDirSmall').textContent = lastValidWindDirectionText;
+            
+            // Update sensor grid
+            document.getElementById('windSpeedValue').textContent = lastValidWindSpeed;
+            document.getElementById('windDirectionDisplay').innerHTML = `<i class="fas fa-compass"></i> Arah: ${lastValidWindDirectionText} (${lastValidWindDirection}°)`;
+            document.getElementById('airTempValue').textContent = lastValidAirTemp;
+            document.getElementById('weatherDesc').innerHTML = `<i class="fas fa-cloud"></i> Cuaca: ${lastValidWeatherDesc}`;
         }
 
         // ========== CHARTS INITIALIZATION ==========
@@ -1459,7 +1615,7 @@
             }
         );
 
-        // Altitude Chart
+        // Altitude Chart (FIXED)
         const altitudeChart = new Chart(
             document.getElementById('altitudeChart').getContext('2d'),
             {
@@ -1499,9 +1655,9 @@
         let maxRpm = 0;
         let maxAltitude = 0;
 
-        // ========== GAUGE UPDATE FUNCTIONS (REVISED - ANTI BLINK) ==========
+        // ========== GAUGE UPDATE FUNCTIONS ==========
         function setGaugeReady(el) {
-            el.classList.remove('no-data');
+            if (el) el.classList.remove('no-data');
         }
 
         function updateSpeed(val) {
@@ -1517,9 +1673,14 @@
             
             let displayValue = lastValidSpeed;
             
-            setGaugeReady(document.getElementById('speedValue'));
-            document.getElementById('speedValue').textContent = displayValue;
-            document.getElementById('speedBar').style.width = Math.min(100, displayValue / 2) + '%';
+            const speedEl = document.getElementById('speedValue');
+            if (speedEl) {
+                setGaugeReady(speedEl);
+                speedEl.textContent = displayValue;
+            }
+            
+            const speedBar = document.getElementById('speedBar');
+            if (speedBar) speedBar.style.width = Math.min(100, displayValue / 2) + '%';
 
             if (displayValue > maxSpeed) {
                 maxSpeed = displayValue;
@@ -1527,21 +1688,23 @@
             }
 
             const badge = document.getElementById('speedBadge');
-            if (displayValue === 0) { 
-                badge.textContent = 'IDLE'; 
-                badge.className = 'gauge-badge'; 
-            }
-            else if (displayValue < 80) { 
-                badge.textContent = 'NORMAL'; 
-                badge.className = 'gauge-badge'; 
-            }
-            else if (displayValue < 140) { 
-                badge.textContent = 'FAST'; 
-                badge.className = 'gauge-badge warn'; 
-            }
-            else { 
-                badge.textContent = 'LIMIT'; 
-                badge.className = 'gauge-badge danger'; 
+            if (badge) {
+                if (displayValue === 0) { 
+                    badge.textContent = 'IDLE'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 80) { 
+                    badge.textContent = 'NORMAL'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 140) { 
+                    badge.textContent = 'FAST'; 
+                    badge.className = 'gauge-badge warn'; 
+                }
+                else { 
+                    badge.textContent = 'LIMIT'; 
+                    badge.className = 'gauge-badge danger'; 
+                }
             }
 
             shiftPush(speedData, displayValue);
@@ -1561,9 +1724,14 @@
             
             let displayValue = lastValidRpm;
             
-            setGaugeReady(document.getElementById('rpmValue'));
-            document.getElementById('rpmValue').textContent = displayValue;
-            document.getElementById('rpmBar').style.width = Math.min(100, displayValue / 120) + '%';
+            const rpmEl = document.getElementById('rpmValue');
+            if (rpmEl) {
+                setGaugeReady(rpmEl);
+                rpmEl.textContent = displayValue;
+            }
+            
+            const rpmBar = document.getElementById('rpmBar');
+            if (rpmBar) rpmBar.style.width = Math.min(100, displayValue / 120) + '%';
 
             if (displayValue > maxRpm) {
                 maxRpm = displayValue;
@@ -1571,17 +1739,19 @@
             }
 
             const badge = document.getElementById('rpmBadge');
-            if (displayValue < 3000) { 
-                badge.textContent = 'LOW'; 
-                badge.className = 'gauge-badge'; 
-            }
-            else if (displayValue < 7000) { 
-                badge.textContent = 'MID'; 
-                badge.className = 'gauge-badge warn'; 
-            }
-            else { 
-                badge.textContent = 'HIGH'; 
-                badge.className = 'gauge-badge danger'; 
+            if (badge) {
+                if (displayValue < 3000) { 
+                    badge.textContent = 'LOW'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 7000) { 
+                    badge.textContent = 'MID'; 
+                    badge.className = 'gauge-badge warn'; 
+                }
+                else { 
+                    badge.textContent = 'HIGH'; 
+                    badge.className = 'gauge-badge danger'; 
+                }
             }
 
             shiftPush(rpmData, displayValue / 100);
@@ -1605,33 +1775,42 @@
             
             const el = document.getElementById('afrValue');
             const badge = document.getElementById('afrBadge');
+            const afrBar = document.getElementById('afrBar');
             
             if (!validAfrReceived) {
-                el.textContent = '--';
-                el.classList.add('no-data');
-                badge.textContent = '--';
-                document.getElementById('afrBar').style.width = '0%';
+                if (el) {
+                    el.textContent = '--';
+                    el.classList.add('no-data');
+                }
+                if (badge) badge.textContent = '--';
+                if (afrBar) afrBar.style.width = '0%';
                 return;
             }
             
-            setGaugeReady(el);
-            el.textContent = displayText;
+            if (el) {
+                setGaugeReady(el);
+                el.textContent = displayText;
+            }
             
-            const barWidth = Math.min(100, Math.max(0, ((displayValue - 10) / 10) * 100));
-            document.getElementById('afrBar').style.width = barWidth + '%';
+            if (afrBar) {
+                const barWidth = Math.min(100, Math.max(0, ((displayValue - 10) / 10) * 100));
+                afrBar.style.width = barWidth + '%';
+            }
 
-            if (displayValue < 12) {
-                el.style.color = '#ff4444';
-                badge.textContent = 'RICH';
-                badge.className = 'gauge-badge danger';
-            } else if (displayValue > 16) {
-                el.style.color = '#ffaa00';
-                badge.textContent = 'LEAN';
-                badge.className = 'gauge-badge warn';
-            } else {
-                el.style.color = '#00ff88';
-                badge.textContent = 'STOICH';
-                badge.className = 'gauge-badge';
+            if (badge) {
+                if (displayValue < 12) {
+                    if (el) el.style.color = '#ff4444';
+                    badge.textContent = 'RICH';
+                    badge.className = 'gauge-badge danger';
+                } else if (displayValue > 16) {
+                    if (el) el.style.color = '#ffaa00';
+                    badge.textContent = 'LEAN';
+                    badge.className = 'gauge-badge warn';
+                } else {
+                    if (el) el.style.color = '#00ff88';
+                    badge.textContent = 'STOICH';
+                    badge.className = 'gauge-badge';
+                }
             }
 
             shiftPush(afrData, displayValue);
@@ -1651,25 +1830,32 @@
             
             let displayValue = lastValidTps;
             
-            setGaugeReady(document.getElementById('tpsValue'));
-            document.getElementById('tpsValue').textContent = displayValue;
-            document.getElementById('tpsBar').style.width = displayValue + '%';
+            const tpsEl = document.getElementById('tpsValue');
+            if (tpsEl) {
+                setGaugeReady(tpsEl);
+                tpsEl.textContent = displayValue;
+            }
+            
+            const tpsBar = document.getElementById('tpsBar');
+            if (tpsBar) tpsBar.style.width = displayValue + '%';
 
             const load = Math.min(100, Math.round(displayValue * 0.8 + 20));
             document.getElementById('engineLoad').textContent = load;
 
             const badge = document.getElementById('tpsBadge');
-            if (displayValue < 30) { 
-                badge.textContent = 'LIGHT'; 
-                badge.className = 'gauge-badge'; 
-            }
-            else if (displayValue < 70) { 
-                badge.textContent = 'MED'; 
-                badge.className = 'gauge-badge warn'; 
-            }
-            else { 
-                badge.textContent = 'FULL'; 
-                badge.className = 'gauge-badge danger'; 
+            if (badge) {
+                if (displayValue < 30) { 
+                    badge.textContent = 'LIGHT'; 
+                    badge.className = 'gauge-badge'; 
+                }
+                else if (displayValue < 70) { 
+                    badge.textContent = 'MED'; 
+                    badge.className = 'gauge-badge warn'; 
+                }
+                else { 
+                    badge.textContent = 'FULL'; 
+                    badge.className = 'gauge-badge danger'; 
+                }
             }
 
             shiftPush(tpsData, displayValue);
@@ -1689,50 +1875,67 @@
             
             let displayValue = lastValidTemp;
 
-            setGaugeReady(document.getElementById('tempValue'));
-            document.getElementById('tempValue').textContent = displayValue;
-            document.getElementById('tempBar').style.width = Math.min(100, (displayValue / 120) * 100) + '%';
+            const tempEl = document.getElementById('tempValue');
+            if (tempEl) {
+                setGaugeReady(tempEl);
+                tempEl.textContent = displayValue;
+            }
+            
+            const tempBar = document.getElementById('tempBar');
+            if (tempBar) tempBar.style.width = Math.min(100, (displayValue / 120) * 100) + '%';
 
-            document.getElementById('tempBigValue').textContent = displayValue;
+            const tempBig = document.getElementById('tempBigValue');
+            if (tempBig) tempBig.textContent = displayValue;
 
             const badge = document.getElementById('tempBadge');
             const statusBadge = document.getElementById('tempStatusBadge');
 
-            if (displayValue < 70) {
-                badge.textContent = 'COLD';
-                badge.className = 'gauge-badge';
-                statusBadge.style.background = 'rgba(68,204,255,0.12)';
-                statusBadge.style.color = '#44ccff';
-                statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> COLD — WARMING UP';
-            } else if (displayValue < 95) {
-                badge.textContent = 'NORMAL';
-                badge.className = 'gauge-badge';
-                statusBadge.style.background = 'rgba(0,232,122,0.12)';
-                statusBadge.style.color = '#00ff88';
-                statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> NORMAL OPERATING TEMP';
-            } else if (displayValue < 110) {
-                badge.textContent = 'WARM';
-                badge.className = 'gauge-badge warn';
-                statusBadge.style.background = 'rgba(255,170,0,0.12)';
-                statusBadge.style.color = '#ffaa00';
-                statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> WARM — MONITOR';
-            } else {
-                badge.textContent = 'HOT!';
-                badge.className = 'gauge-badge danger';
-                statusBadge.style.background = 'rgba(255,61,61,0.15)';
-                statusBadge.style.color = '#ff3d3d';
-                statusBadge.innerHTML = '<i class="fas fa-fire" style="font-size:7px;"></i> OVERHEAT WARNING!';
+            if (badge) {
+                if (displayValue < 70) {
+                    badge.textContent = 'COLD';
+                    badge.className = 'gauge-badge';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(68,204,255,0.12)';
+                        statusBadge.style.color = '#44ccff';
+                        statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> COLD — WARMING UP';
+                    }
+                } else if (displayValue < 95) {
+                    badge.textContent = 'NORMAL';
+                    badge.className = 'gauge-badge';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(0,232,122,0.12)';
+                        statusBadge.style.color = '#00ff88';
+                        statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> NORMAL OPERATING TEMP';
+                    }
+                } else if (displayValue < 110) {
+                    badge.textContent = 'WARM';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(255,170,0,0.12)';
+                        statusBadge.style.color = '#ffaa00';
+                        statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> WARM — MONITOR';
+                    }
+                } else {
+                    badge.textContent = 'HOT!';
+                    badge.className = 'gauge-badge danger';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(255,61,61,0.15)';
+                        statusBadge.style.color = '#ff3d3d';
+                        statusBadge.innerHTML = '<i class="fas fa-fire" style="font-size:7px;"></i> OVERHEAT WARNING!';
+                    }
+                }
             }
 
             shiftPush(tempHistData, displayValue);
             tempChart.update('none');
         }
 
+        // ========== UPDATE ALTITUDE (FIXED) ==========
         function updateAltitude(val) {
             const numVal = parseInt(val);
             const now = Date.now();
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && val >= 0;
             
             if (isDataValid) {
                 lastValidAltitude = numVal;
@@ -1741,39 +1944,54 @@
             
             let displayValue = lastValidAltitude;
             
-            setGaugeReady(document.getElementById('altitudeValue'));
-            document.getElementById('altitudeValue').textContent = displayValue;
-            
-            const barWidth = Math.min(100, (displayValue / 3000) * 100);
-            document.getElementById('altitudeBar').style.width = barWidth + '%';
-            
-            document.getElementById('altitudeBigValue').textContent = displayValue;
-            
-            if (displayValue > maxAltitude) {
-                maxAltitude = displayValue;
+            // Update gauge card
+            const altEl = document.getElementById('altitudeValue');
+            if (altEl) {
+                setGaugeReady(altEl);
+                altEl.textContent = displayValue;
             }
             
+            const altBar = document.getElementById('altitudeBar');
+            if (altBar) {
+                const barWidth = Math.min(100, (displayValue / 3000) * 100);
+                altBar.style.width = barWidth + '%';
+            }
+            
+            // Update big number card
+            const altBig = document.getElementById('altitudeBigValue');
+            if (altBig) altBig.textContent = displayValue;
+            
+            // Track max altitude
+            if (displayValue > maxAltitude) {
+                maxAltitude = displayValue;
+                document.getElementById('maxAltitude').textContent = displayValue;
+            }
+            
+            // Update badges
             const badge = document.getElementById('altitudeBadge');
             const statusBadge = document.getElementById('altitudeStatusBadge');
             
-            if (displayValue < 500) {
-                badge.textContent = 'RENDAH';
-                badge.className = 'gauge-badge';
-                statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN RENDAH';
-            } else if (displayValue < 1000) {
-                badge.textContent = 'SEDANG';
-                badge.className = 'gauge-badge warn';
-                statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN TINGGI';
-            } else if (displayValue < 2000) {
-                badge.textContent = 'TINGGI';
-                badge.className = 'gauge-badge warn';
-                statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> PEGUNUNGAN';
-            } else {
-                badge.textContent = 'EKSTRIM';
-                badge.className = 'gauge-badge danger';
-                statusBadge.innerHTML = '<i class="fas fa-skull" style="font-size:7px;"></i> VERY HIGH ALTITUDE';
+            if (badge) {
+                if (displayValue < 500) {
+                    badge.textContent = 'RENDAH';
+                    badge.className = 'gauge-badge';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN RENDAH';
+                } else if (displayValue < 1000) {
+                    badge.textContent = 'SEDANG';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN TINGGI';
+                } else if (displayValue < 2000) {
+                    badge.textContent = 'TINGGI';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> PEGUNUNGAN';
+                } else {
+                    badge.textContent = 'EKSTRIM';
+                    badge.className = 'gauge-badge danger';
+                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-skull" style="font-size:7px;"></i> VERY HIGH ALTITUDE';
+                }
             }
             
+            // Update chart
             shiftPush(altitudeData, displayValue);
             altitudeChart.update('none');
         }
@@ -1783,22 +2001,24 @@
             const tbody = document.getElementById('sensorLog');
             const timeStr = new Date().toLocaleTimeString('id-ID');
 
-            const speed = data.kecepatan ?? '--';
-            const rpm = data.rpm_coil ?? '--';
-            const afr = data.afr_etanol != null ? data.afr_etanol.toFixed(1) : '--';
-            const tps = data.throttle ?? '--';
-            const temp = data.suhu ?? '--';
-            const alt = data.altitude ?? data.ketinggian ?? '--';
+            const speed = data.speed ?? data.kecepatan ?? lastValidSpeed;
+            const rpm = data.rpm ?? data.rpm_coil ?? lastValidRpm;
+            const afr = data.afr ?? data.afr_etanol ?? (validAfrReceived ? lastValidAfr.toFixed(1) : '--');
+            const tps = data.tps ?? data.throttle ?? lastValidTps;
+            const temp = data.temp ?? data.suhu ?? lastValidTemp;
+            const alt = data.altitude ?? data.ketinggian ?? lastValidAltitude;
+            const wind = data.windSpeed ?? lastValidWindSpeed;
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span style="color:var(--blue);font-family:'Share Tech Mono'">${timeStr}</span></td>
                 <td><span class="value-highlight">${speed}</span> km/h</td>
                 <td>${rpm} RPM</td>
-                <td>${afr} λ</td>
+                <td>${typeof afr === 'number' ? afr.toFixed(1) : afr} λ</td>
                 <td>${tps}%</td>
                 <td>${temp}°C</td>
                 <td>${alt} m</td>
+                <td>${wind} km/h</td>
                 <td style="color:#00ff88;">ACTIVE</td>
             `;
 
@@ -1808,15 +2028,14 @@
             }
         }
 
-        // ========== MQTT HANDLERS (REVISED) ==========
+        // ========== MQTT HANDLERS ==========
         client.on('connect', () => {
             console.log('✅ Connected to MQTT');
             document.getElementById('statusDot').className = 'dot online';
             document.getElementById('statusText').textContent = 'ONLINE';
 
             client.subscribe('location/urban/coordinates');
-            client.subscribe('semeru/urban/#');
-            console.log('📡 Subscribed to topics');
+            console.log('📡 Subscribed to location/urban/coordinates');
         });
 
         client.on('disconnect', () => {
@@ -1828,68 +2047,74 @@
 
         client.on('message', (topic, message) => {
             const value = message.toString();
-            
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('id-ID');
 
-            // GPS Location
+            // Parse JSON data dari Urban Pro driver
             if (topic === 'location/urban/coordinates') {
                 try {
-                    const loc = JSON.parse(value);
-                    if (loc.lat && loc.lng && !isNaN(loc.lat) && !isNaN(loc.lng) && 
-                        (loc.lat !== 0 || loc.lng !== 0)) {
+                    const data = JSON.parse(value);
+                    
+                    // Update lokasi
+                    if (data.lat && data.lng && !isNaN(data.lat) && !isNaN(data.lng)) {
                         updateLocation(
-                            parseFloat(loc.lat),
-                            parseFloat(loc.lng),
-                            loc.accuracy || 25,
-                            loc.speed || 0
+                            parseFloat(data.lat),
+                            parseFloat(data.lng),
+                            data.accuracy || 25,
+                            data.speed || 0
                         );
                     }
-                } catch {
+                    
+                    // Update semua sensor
+                    if (data.speed !== undefined) updateSpeed(data.speed);
+                    if (data.rpm !== undefined) updateRpm(data.rpm);
+                    if (data.afr !== undefined) updateAfr(data.afr);
+                    if (data.tps !== undefined) updateTps(data.tps);
+                    if (data.temp !== undefined) updateTemp(data.temp);
+                    
+                    // ALTITUDE - INI YANG DIPERBAIKI
+                    if (data.altitude !== undefined && data.altitude !== null && data.altitude > 0) {
+                        console.log('🏔️ Altitude received:', data.altitude, 'm');
+                        updateAltitude(data.altitude);
+                    }
+                    
+                    // Wind data
+                    if (data.windSpeed !== undefined || data.windDirection !== undefined) {
+                        updateWindUI({
+                            speed: data.windSpeed || 0,
+                            direction: data.windDirection || 0,
+                            temperature: data.temperature || 0,
+                            weatherCode: data.weatherCode || 0
+                        });
+                    }
+                    
+                    // Run time
+                    if (data.runTime !== undefined) {
+                        document.getElementById('runTime').textContent = data.runTime;
+                        document.getElementById('runTimeSmall').textContent = data.runTime;
+                    }
+                    
+                    // Update log
+                    updateSensorLog(data);
+                    
+                } catch (e) {
+                    // Fallback untuk format CSV lama
                     const parts = value.split(',');
                     if (parts.length >= 2) {
                         const lat = parseFloat(parts[0]);
                         const lng = parseFloat(parts[1]);
-                        if (!isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0)) {
+                        if (!isNaN(lat) && !isNaN(lng)) {
                             updateLocation(lat, lng, parts[2] ? parseFloat(parts[2]) : 25, parts[3] ? parseFloat(parts[3]) : 0);
                         }
                     }
                 }
                 return;
             }
-
-            // Sensor data - hanya proses jika value tidak kosong
-            if (value && value !== 'null' && value !== 'undefined' && value !== '') {
-                if (topic === 'semeru/urban/speed') updateSpeed(value);
-                if (topic === 'semeru/urban/rpm') updateRpm(value);
-                if (topic === 'semeru/urban/afr') updateAfr(value);
-                if (topic === 'semeru/urban/tps') updateTps(value);
-                if (topic === 'semeru/urban/temp') updateTemp(value);
-                if (topic === 'semeru/urban/altitude') updateAltitude(value);
-            }
-
-            if (topic === 'semeru/urban/data') {
-                try {
-                    const data = JSON.parse(value);
-                    if (data.waktu) {
-                        const timeStr = `${data.waktu.menit}:${data.waktu.detik.toString().padStart(2, '0')}`;
-                        document.getElementById('runTime').textContent = timeStr;
-                        document.getElementById('runTimeSmall').textContent = timeStr;
-                    }
-                    if (data.kecepatan !== undefined && data.kecepatan !== null) updateSpeed(data.kecepatan);
-                    if (data.rpm_coil !== undefined && data.rpm_coil !== null) updateRpm(data.rpm_coil);
-                    if (data.afr_etanol !== undefined && data.afr_etanol !== null) updateAfr(data.afr_etanol);
-                    if (data.throttle !== undefined && data.throttle !== null) updateTps(data.throttle);
-                    if (data.suhu !== undefined && data.suhu !== null) updateTemp(data.suhu);
-                    if (data.altitude !== undefined && data.altitude !== null) updateAltitude(data.altitude);
-                    
-                    updateSensorLog(data);
-                } catch {}
-            }
         });
 
         // ========== INITIALIZE ==========
         initMap();
+        console.log('🚗 Urban Dashboard Pro ready - waiting for altitude data...');
     </script>
 </body>
 </html>
-
