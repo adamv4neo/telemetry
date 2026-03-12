@@ -1124,7 +1124,6 @@
                     </div>
                 </div>
             </div>
-            </div>
         </div>
 
         <!-- DATA TABLE -->
@@ -1257,7 +1256,7 @@
             }
         }
 
-               // ========== VARIABEL UNTUK MENYIMPAN NILAI TERAKHIR ==========
+        // ========== VARIABEL UNTUK MENYIMPAN NILAI TERAKHIR ==========
         let lastValidSpeed = 0;
         let lastValidRpm = 0;
         let lastValidAfr = 14.7;
@@ -1267,9 +1266,6 @@
 
         // Flag untuk AFR pertama kali
         let validAfrReceived = false;
-
-        // Threshold waktu (ms)
-        const DATA_TIMEOUT = 2000; // 2 detik
 
         // ========== CHARTS INITIALIZATION ==========
         const maxDataPoints = 30;
@@ -1494,7 +1490,7 @@
         let maxRpm = 0;
         let maxAltitude = 0;
 
-        // ========== FUNGSI UPDATE (SAMA PERSIS PROTO.HTML) ==========
+        // ========== FUNGSI UPDATE (ANTI-BLINK) ==========
         function setGaugeReady(el) {
             if (el) el.classList.remove('no-data');
         }
@@ -1851,17 +1847,19 @@
             }
         }
 
-        // ========== MQTT HANDLERS ==========
+        // ========== MQTT HANDLERS (URBAN ONLY) ==========
         client.on('connect', () => {
             console.log('✅ Connected to MQTT');
             document.getElementById('statusDot').className = 'dot online';
             document.getElementById('statusText').textContent = 'ONLINE';
 
+            // Subscribe HANYA ke topic urban (tanpa proto)
             client.subscribe('location/urban/coordinates', err => {
                 if (err) console.error('Subscribe error:', err);
             });
             client.subscribe('semeru/urban/#'); // Subscribe ke semua topic urban
-            client.subscribe('semeru/proto/#'); // Tambahan untuk kompatibilitas
+            
+            console.log('📡 Subscribed to urban topics only');
         });
 
         client.on('disconnect', () => {
@@ -1898,31 +1896,8 @@
             }
             
             // ===== SENSOR DATA HANDLER =====
-            // Hanya proses jika value tidak kosong dan bukan "null"
-            if (value && value !== 'null' && value !== 'undefined' && value !== '') {
-                // Update setiap topic individual
-                if (topic === 'semeru/urban/speed' || topic === 'semeru/proto/speed') {
-                    updateSpeed(value);
-                }
-                if (topic === 'semeru/urban/rpm' || topic === 'semeru/proto/rpm') {
-                    updateRpm(value);
-                }
-                if (topic === 'semeru/urban/afr' || topic === 'semeru/proto/afr') {
-                    updateAfr(value);
-                }
-                if (topic === 'semeru/urban/tps' || topic === 'semeru/proto/tps') {
-                    updateTps(value);
-                }
-                if (topic === 'semeru/urban/temp' || topic === 'semeru/proto/temp') {
-                    updateTemp(value);
-                }
-                if (topic === 'semeru/urban/altitude' || topic === 'semeru/proto/altitude') {
-                    updateAltitude(value);
-                }
-            }
-
-            // Handle data JSON lengkap
-            if (topic === 'semeru/urban/data' || topic === 'semeru/proto/data') {
+            // HANYA PROSES DATA LENGKAP (JSON) untuk menghindari blink
+            if (topic === 'semeru/urban/data') {
                 try {
                     const data = JSON.parse(value);
                     
@@ -1933,7 +1908,7 @@
                         document.getElementById('runTimeSmall').textContent = timeStr;
                     }
                     
-                    // Update setiap field dengan pengecekan ketat
+                    // Update semua field dari SATU SUMBER
                     if (data.kecepatan !== undefined && data.kecepatan !== null) {
                         updateSpeed(data.kecepatan);
                     }
@@ -1955,15 +1930,19 @@
                     
                     updateSensorLog(data);
                 } catch (e) {
-                    // Bukan JSON, abaikan
+                    console.log('JSON Parse Error:', e);
                 }
+                return; // STOP di sini, jangan proses topic individual
             }
+            
+            // ===== IGNORE TOPIC INDIVIDUAL (speed, rpm, dll) =====
+            // Topic individual diabaikan untuk menghindari multiple update
+            // if (topic === 'semeru/urban/speed') ... TIDAK DIPROSES
         });
 
         // ========== INITIALIZE ==========
         initMap();
-        console.log('🚗 Urban Dashboard ready (NO BLINK version)');
+        console.log('🚗 Urban Dashboard ready - URBAN ONLY, NO BLINK');
     </script>
 </body>
 </html>
-
