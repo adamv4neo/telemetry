@@ -11,9 +11,6 @@
     <!-- MQTT -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.0.0/mqtt.min.js"></script>
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
@@ -434,103 +431,67 @@
             font-size: 28px;
         }
 
-        /* ========== CHARTS SECTION ========== */
-        .charts-section { margin-bottom: 28px; }
+        /* ========== LIVE METRICS SECTION ========== */
+        .metrics-section { margin-bottom: 28px; }
 
-        .metric-row {
+        .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
-            margin-bottom: 16px;
         }
 
-        .temp-row {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .chart-card {
+        .metric-card {
             background: var(--bg-card);
             border-radius: 8px;
             border: 1px solid var(--blue-border);
-            padding: 16px 20px;
+            padding: 18px 16px;
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(10px);
         }
 
-        .chart-card::before {
+        .metric-card::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--blue), transparent);
+            height: 3px;
+            background: linear-gradient(90deg, var(--blue), #4d33ff);
         }
 
-        .chart-card.afr-chart::before { background: linear-gradient(90deg, var(--red), transparent); }
-        .chart-card.tps-chart::before { background: linear-gradient(90deg, #0099ff, transparent); }
-        .chart-card.temp-chart::before { background: linear-gradient(90deg, #ff6622, transparent); }
-        .chart-card.altitude-chart::before { background: linear-gradient(90deg, #44ccff, transparent); }
-
-        .chart-title {
-            font-size: 11px;
+        .metric-label {
+            font-size: 10px;
             font-weight: 700;
             letter-spacing: 2px;
             color: var(--text-muted);
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 6px;
         }
 
-        .chart-title i { color: var(--blue); }
-        .chart-card.afr-chart .chart-title i { color: var(--red); }
-        .chart-card.tps-chart .chart-title i { color: #44ccff; }
-        .chart-card.temp-chart .chart-title i { color: #ff9933; }
-        .chart-card.altitude-chart .chart-title i { color: #44ccff; }
-
-        .chart-timeframe {
-            font-size: 10px;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            background: rgba(255,255,255,0.04);
-            padding: 2px 8px;
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.06);
+        .metric-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            font-weight: 900;
+            line-height: 1;
+            color: white;
         }
 
-        .chart-canvas-wrap {
-            position: relative;
-            height: 130px;
+        .metric-unit {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-left: 4px;
         }
 
-        .big-chart-card {
-            background: var(--bg-card);
-            border-radius: 8px;
-            border: 1px solid var(--blue-border);
-            padding: 16px 20px;
-            margin-bottom: 16px;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
+        /* ========== TEMPERATURE CARDS ========== */
+        .temp-section { margin-bottom: 28px; }
+
+        .temp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
         }
 
-        .big-chart-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, var(--blue), #4d33ff, transparent);
-        }
-
-        .big-chart-wrap {
-            position: relative;
-            height: 160px;
-        }
-
-        /* ========== NUMBER CARDS ========== */
         .number-card {
             background: var(--bg-card);
             border-radius: 8px;
@@ -538,9 +499,6 @@
             padding: 18px 16px;
             position: relative;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
             backdrop-filter: blur(10px);
         }
 
@@ -550,44 +508,6 @@
             top: 0; left: 0; right: 0;
             height: 3px;
             background: linear-gradient(90deg, var(--blue), #4d33ff);
-        }
-
-        .number-main-value {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 56px;
-            font-weight: 900;
-            color: var(--blue);
-            line-height: 1;
-            position: relative;
-            z-index: 1;
-        }
-
-        .number-label {
-            font-size: 10px;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .number-status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            padding: 4px 10px;
-            border-radius: 3px;
-            margin-top: 10px;
-            background: rgba(0,232,122,0.12);
-            color: var(--green);
-            border: 1px solid rgba(0,232,122,0.25);
-            position: relative;
-            z-index: 1;
         }
 
         .temp-number-card {
@@ -625,6 +545,50 @@
         }
 
         .altitude-number-card .number-main-value { color: #44ccff; }
+
+        .number-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .number-main-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            color: var(--blue);
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .temp-unit-big {
+            font-size: 20px;
+            color: var(--text-dim);
+            margin-left: 5px;
+        }
+
+        .number-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            background: rgba(0,232,122,0.12);
+            color: var(--green);
+            border: 1px solid rgba(0,232,122,0.25);
+            position: relative;
+            z-index: 1;
+        }
 
         /* ========== SENSOR GRID ========== */
         .sensor-grid {
@@ -795,14 +759,14 @@
         /* ========== RESPONSIVE ========== */
         @media (max-width: 1200px) {
             .gauge-grid { grid-template-columns: repeat(3, 1fr); }
-            .metric-row { grid-template-columns: 1fr 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
             .sensor-grid { grid-template-columns: repeat(2, 1fr); }
+            .temp-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 900px) {
             .gauge-grid { grid-template-columns: repeat(2, 1fr); }
-            .metric-row { grid-template-columns: 1fr; }
-            .temp-row { grid-template-columns: 1fr; }
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
             .sensor-grid { grid-template-columns: 1fr; }
             .dashboard { padding: 16px; }
         }
@@ -813,6 +777,7 @@
             .gauge-value { font-size: 32px; }
             .nav-right { width: 100%; justify-content: space-between; }
             .location-info .loc-item { border-right: none; border-bottom: 1px solid var(--blue-border); }
+            .metrics-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -982,76 +947,53 @@
             </div>
         </div>
 
-        <!-- CHARTS SECTION -->
-        <div class="charts-section">
-            <div class="section-label"><i class="fas fa-chart-line" style="color:var(--blue)"></i> HISTORY CHARTS</div>
-
-            <!-- Speed + RPM Combined Chart -->
-            <div class="big-chart-card">
-                <div class="chart-title">
-                    <span><i class="fas fa-tachometer-alt"></i> &nbsp; SPEED & RPM — 30 DETIK TERAKHIR</span>
-                    <span class="chart-timeframe">30s</span>
-                </div>
-                <div class="big-chart-wrap">
-                    <canvas id="speedRpmChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Row: AFR Chart | TPS Chart | Live Metrics -->
-            <div class="metric-row">
-                <div class="chart-card afr-chart">
-                    <div class="chart-title">
-                        <span><i class="fas fa-gas-pump"></i> &nbsp; AFR / LAMBDA</span>
-                        <span class="chart-timeframe">30s</span>
+        <!-- LIVE METRICS SECTION -->
+        <div class="metrics-section">
+            <div class="section-label"><i class="fas fa-gauge-high" style="color:var(--blue)"></i> LIVE METRICS</div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <i class="fas fa-gauge-high" style="color:var(--blue)"></i> MAX SPEED
                     </div>
-                    <div class="chart-canvas-wrap">
-                        <canvas id="afrChart"></canvas>
+                    <div>
+                        <span class="metric-value" id="maxSpeed">--</span>
+                        <span class="metric-unit">km/h</span>
                     </div>
                 </div>
-
-                <div class="chart-card tps-chart">
-                    <div class="chart-title">
-                        <span><i class="fas fa-sliders-h" style="color:#44ccff"></i> &nbsp; THROTTLE POSITION</span>
-                        <span class="chart-timeframe">30s</span>
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <i class="fas fa-circle-notch" style="color:#ffcc44"></i> MAX RPM
                     </div>
-                    <div class="chart-canvas-wrap">
-                        <canvas id="tpsChart"></canvas>
+                    <div>
+                        <span class="metric-value" id="maxRpm" style="color:#ffcc44">--</span>
+                        <span class="metric-unit">RPM</span>
                     </div>
                 </div>
-
-                <!-- Live Metrics Card -->
-                <div class="chart-card" style="display:flex; flex-direction:column; justify-content:center;">
-                    <div class="chart-title">
-                        <span><i class="fas fa-gauge-high"></i> &nbsp; LIVE METRICS</span>
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <i class="fas fa-stopwatch" style="color:white"></i> RUN TIME
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                        <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">MAX SPEED</div>
-                            <div style="font-family:'Orbitron'; font-size:26px; color:var(--blue);" id="maxSpeed">--</div>
-                            <div style="font-size:11px;color:var(--text-muted)">km/h</div>
-                        </div>
-                        <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">MAX RPM</div>
-                            <div style="font-family:'Orbitron'; font-size:26px; color:#ffcc44;" id="maxRpm">--</div>
-                            <div style="font-size:11px;color:var(--text-muted)">RPM</div>
-                        </div>
-                        <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">RUN TIME</div>
-                            <div style="font-family:'Share Tech Mono'; font-size:22px; color:white;" id="runTime">0:00</div>
-                            <div style="font-size:11px;color:var(--text-muted)">menit</div>
-                        </div>
-                        <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">ENGINE LOAD</div>
-                            <div style="font-family:'Orbitron'; font-size:26px; color:#44ccff;" id="engineLoad">--</div>
-                            <div style="font-size:11px;color:var(--text-muted)">%</div>
-                        </div>
+                    <div>
+                        <span class="metric-value" id="runTime" style="color:white; font-family:'Share Tech Mono'">0:00</span>
+                        <span class="metric-unit">menit</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">
+                        <i class="fas fa-sliders-h" style="color:#44ccff"></i> ENGINE LOAD
+                    </div>
+                    <div>
+                        <span class="metric-value" id="engineLoad" style="color:#44ccff">--</span>
+                        <span class="metric-unit">%</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- TEMPERATURE SECTION -->
-            <div class="section-label" style="margin-top:4px;"><i class="fas fa-temperature-high" style="color:#ff9933"></i> COOLANT TEMPERATURE</div>
-            <div class="temp-row">
+        <!-- TEMPERATURE SECTION -->
+        <div class="temp-section">
+            <div class="section-label"><i class="fas fa-temperature-high" style="color:#ff9933"></i> COOLANT TEMPERATURE</div>
+            <div class="temp-grid">
                 <!-- Temperature Number Card -->
                 <div class="temp-number-card" id="tempNumberCard">
                     <div class="number-label">
@@ -1067,21 +1009,6 @@
                     </div>
                 </div>
 
-                <!-- Temperature Chart -->
-                <div class="chart-card temp-chart">
-                    <div class="chart-title">
-                        <span><i class="fas fa-fire"></i> &nbsp; TEMPERATURE HISTORY — 30 DETIK TERAKHIR</span>
-                        <span class="chart-timeframe">30s</span>
-                    </div>
-                    <div style="position:relative; height: 160px;">
-                        <canvas id="tempChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ALTITUDE SECTION -->
-            <div class="section-label" style="margin-top:20px;"><i class="fas fa-mountain" style="color:#44ccff"></i> ALTITUDE TRACKING</div>
-            <div class="temp-row">
                 <!-- Altitude Number Card -->
                 <div class="altitude-number-card" id="altitudeNumberCard">
                     <div class="number-label" style="color:#44ccff;">
@@ -1094,17 +1021,6 @@
                     <div class="number-status-badge" id="altitudeStatusBadge" style="background:rgba(68,204,255,0.12); color:#44ccff; border-color:rgba(68,204,255,0.25);">
                         <i class="fas fa-circle" style="font-size:7px;"></i>
                         MENUNGGU DATA
-                    </div>
-                </div>
-
-                <!-- Altitude Chart -->
-                <div class="chart-card altitude-chart">
-                    <div class="chart-title">
-                        <span><i class="fas fa-chart-line" style="color:#44ccff"></i> &nbsp; ALTITUDE HISTORY — 30 DETIK TERAKHIR</span>
-                        <span class="chart-timeframe">30s</span>
-                    </div>
-                    <div style="position:relative; height: 160px;">
-                        <canvas id="altitudeChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -1121,6 +1037,42 @@
                     <div>
                         <span class="sensor-value" id="runTimeSmall">0:00</span>
                         <span class="sensor-unit">menit</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">SPEED</div>
+                    <div>
+                        <span class="sensor-value" id="speedSensor">--</span>
+                        <span class="sensor-unit">km/h</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-gas-pump"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">AFR</div>
+                    <div>
+                        <span class="sensor-value" id="afrSensor">--</span>
+                        <span class="sensor-unit">λ</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-temperature-high"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">TEMP</div>
+                    <div>
+                        <span class="sensor-value" id="tempSensor">--</span>
+                        <span class="sensor-unit">°C</span>
                     </div>
                 </div>
             </div>
@@ -1267,228 +1219,11 @@
         // Flag untuk AFR pertama kali
         let validAfrReceived = false;
 
-        // ========== CHARTS INITIALIZATION ==========
-        const maxDataPoints = 30;
-        const timeLabels = Array.from({ length: maxDataPoints }, (_, i) => `-${maxDataPoints - i}s`);
-
-        const speedData = new Array(maxDataPoints).fill(null);
-        const rpmData = new Array(maxDataPoints).fill(null);
-        const afrData = new Array(maxDataPoints).fill(null);
-        const tpsData = new Array(maxDataPoints).fill(null);
-        const tempHistData = new Array(maxDataPoints).fill(null);
-        const altitudeData = new Array(maxDataPoints).fill(null);
-
-        function shiftPush(arr, val) {
-            arr.shift();
-            arr.push(val);
-        }
-
-        const commonGridColor = 'rgba(255,255,255,0.04)';
-        const commonTickColor = '#5a7a9a';
-
-        // Speed + RPM Chart
-        const speedRpmChart = new Chart(
-            document.getElementById('speedRpmChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [
-                        {
-                            label: 'Speed (km/h)',
-                            data: speedData,
-                            borderColor: '#2f00ff',
-                            backgroundColor: 'rgba(47,0,255,0.06)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            fill: true,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'RPM (×100)',
-                            data: rpmData,
-                            borderColor: '#ffaa00',
-                            backgroundColor: 'rgba(255,170,0,0.04)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            fill: true,
-                            yAxisID: 'y1'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    animation: { duration: 300 },
-                    plugins: {
-                        legend: { display: true, position: 'top', labels: { color: '#8aa4bc', font: { size: 11 } } },
-                        tooltip: { backgroundColor: '#0c1220', titleColor: '#fff', bodyColor: '#8aa4bc' }
-                    },
-                    scales: {
-                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
-                        y: {
-                            position: 'left',
-                            grid: { color: 'rgba(47,0,255,0.07)' },
-                            ticks: { color: '#2f00ff', font: { size: 10 } },
-                            title: { display: true, text: 'km/h', color: '#2f00ff', font: { size: 10 } }
-                        },
-                        y1: {
-                            position: 'right',
-                            grid: { drawOnChartArea: false },
-                            ticks: { color: '#ffaa00', font: { size: 10 } },
-                            title: { display: true, text: 'RPM ×100', color: '#ffaa00', font: { size: 10 } }
-                        }
-                    }
-                }
-            }
-        );
-
-        // AFR Chart
-        const afrChart = new Chart(
-            document.getElementById('afrChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [
-                        {
-                            label: 'AFR (λ)',
-                            data: afrData,
-                            borderColor: '#ff3d3d',
-                            backgroundColor: 'rgba(255,61,61,0.07)',
-                            borderWidth: 2,
-                            tension: 0.4,
-                            pointRadius: 0,
-                            fill: true
-                        },
-                        {
-                            label: 'Stoich 14.7',
-                            data: new Array(maxDataPoints).fill(14.7),
-                            borderColor: 'rgba(255,255,255,0.15)',
-                            borderWidth: 1,
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            fill: false
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 300 },
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,61,61,0.07)' }, ticks: { color: '#ff3d3d', font: { size: 10 } }, min: 10, max: 20 }
-                    }
-                }
-            }
-        );
-
-        // TPS Chart
-        const tpsChart = new Chart(
-            document.getElementById('tpsChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [{
-                        label: 'TPS (%)',
-                        data: tpsData,
-                        borderColor: '#44ccff',
-                        backgroundColor: 'rgba(68,204,255,0.06)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        pointRadius: 0,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 300 },
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(68,204,255,0.07)' }, ticks: { color: '#44ccff', font: { size: 10 } }, min: 0, max: 100 }
-                    }
-                }
-            }
-        );
-
-        // Temperature Chart
-        const tempChart = new Chart(
-            document.getElementById('tempChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [{
-                        label: 'Suhu (°C)',
-                        data: tempHistData,
-                        borderColor: '#ff9933',
-                        backgroundColor: 'rgba(255,153,51,0.07)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 300 },
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,153,51,0.07)' }, ticks: { color: '#ff9933', font: { size: 10 } }, min: 0 }
-                    }
-                }
-            }
-        );
-
-        // Altitude Chart
-        const altitudeChart = new Chart(
-            document.getElementById('altitudeChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timeLabels,
-                    datasets: [{
-                        label: 'Altitude (m)',
-                        data: altitudeData,
-                        borderColor: '#44ccff',
-                        backgroundColor: 'rgba(68,204,255,0.06)',
-                        borderWidth: 2,
-                        tension: 0.3,
-                        pointRadius: 0,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    animation: { duration: 300 },
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
-                        y: { 
-                            grid: { color: 'rgba(68,204,255,0.07)' }, 
-                            ticks: { color: '#44ccff', font: { size: 10 } },
-                            title: { display: true, text: 'meter', color: '#44ccff', font: { size: 10 } }
-                        }
-                    }
-                }
-            }
-        );
-
         // ========== MAX TRACKERS ==========
         let maxSpeed = 0;
         let maxRpm = 0;
         let maxAltitude = 0;
+        let startTime = Date.now();
 
         // ========== FUNGSI UPDATE (ANTI-BLINK) ==========
         function setGaugeReady(el) {
@@ -1513,6 +1248,10 @@
                 setGaugeReady(speedEl);
                 speedEl.textContent = displayValue;
             }
+            
+            // Update sensor card
+            const speedSensor = document.getElementById('speedSensor');
+            if (speedSensor) speedSensor.textContent = displayValue;
             
             const speedBar = document.getElementById('speedBar');
             if (speedBar) speedBar.style.width = Math.min(100, displayValue / 2) + '%';
@@ -1541,9 +1280,6 @@
                     badge.className = 'gauge-badge danger'; 
                 }
             }
-
-            shiftPush(speedData, displayValue);
-            speedRpmChart.update('none');
         }
 
         // RPM
@@ -1587,9 +1323,6 @@
                     badge.className = 'gauge-badge danger'; 
                 }
             }
-
-            shiftPush(rpmData, displayValue / 100);
-            speedRpmChart.update('none');
         }
 
         // AFR
@@ -1609,12 +1342,14 @@
             const el = document.getElementById('afrValue');
             const badge = document.getElementById('afrBadge');
             const afrBar = document.getElementById('afrBar');
+            const afrSensor = document.getElementById('afrSensor');
             
             if (!validAfrReceived) {
                 if (el) {
                     el.textContent = '--';
                     el.classList.add('no-data');
                 }
+                if (afrSensor) afrSensor.textContent = '--';
                 if (badge) badge.textContent = '--';
                 if (afrBar) afrBar.style.width = '0%';
                 return;
@@ -1624,6 +1359,8 @@
                 setGaugeReady(el);
                 el.textContent = displayText;
             }
+            
+            if (afrSensor) afrSensor.textContent = displayText;
             
             if (afrBar) {
                 const barWidth = Math.min(100, Math.max(0, ((displayValue - 10) / 10) * 100));
@@ -1645,9 +1382,6 @@
                     badge.className = 'gauge-badge';
                 }
             }
-
-            shiftPush(afrData, displayValue);
-            afrChart.update('none');
         }
 
         // TPS
@@ -1689,9 +1423,6 @@
                     badge.className = 'gauge-badge danger'; 
                 }
             }
-
-            shiftPush(tpsData, displayValue);
-            tpsChart.update('none');
         }
 
         // TEMP
@@ -1711,6 +1442,10 @@
                 setGaugeReady(tempEl);
                 tempEl.textContent = displayValue;
             }
+            
+            // Update sensor card
+            const tempSensor = document.getElementById('tempSensor');
+            if (tempSensor) tempSensor.textContent = displayValue;
             
             const tempBar = document.getElementById('tempBar');
             if (tempBar) tempBar.style.width = Math.min(100, (displayValue / 120) * 100) + '%';
@@ -1755,9 +1490,6 @@
                     }
                 }
             }
-
-            shiftPush(tempHistData, displayValue);
-            tempChart.update('none');
         }
 
         // ALTITUDE
@@ -1812,9 +1544,16 @@
                     if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-skull" style="font-size:7px;"></i> VERY HIGH ALTITUDE';
                 }
             }
-            
-            shiftPush(altitudeData, displayValue);
-            altitudeChart.update('none');
+        }
+
+        // Update runtime
+        function updateRunTime() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('runTime').textContent = timeStr;
+            document.getElementById('runTimeSmall').textContent = timeStr;
         }
 
         // ========== SENSOR LOG UPDATE ==========
@@ -1942,7 +1681,8 @@
 
         // ========== INITIALIZE ==========
         initMap();
-        console.log('🚗 Urban Dashboard ready - URBAN ONLY, NO BLINK');
+        setInterval(updateRunTime, 1000); // Update runtime setiap detik
+        console.log('🚗 Urban Dashboard ready - URBAN ONLY, NO BLINK, NO CHARTS');
     </script>
 </body>
 </html>
