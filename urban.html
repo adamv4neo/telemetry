@@ -1320,7 +1320,7 @@
         let lastValidRpm = 0;
         let lastValidAfr = 14.7;
         let lastValidTps = 0;
-        let lastValidTemp = 0;
+        let lastValidTemp = 85;  // Default suhu mesin
         let lastValidVbat = 12.0;
         let lastEcuStatus = false;
         let lastPacketCounter = 0;
@@ -1552,12 +1552,12 @@
         let maxSpeed = 0;
         let maxRpm = 0;
 
-        // ========== FUNGSI UPDATE (SESUAI FORMAT ESP32: sp, rp, af, tp, su, vb, ec, waktu) ==========
+        // ========== FUNGSI UPDATE (SESUAI FORMAT JSON DARI ESP32) ==========
         function setGaugeReady(el) {
             if (el) el.classList.remove('no-data');
         }
 
-        // SPEED - dari field 'sp'
+        // SPEED - dari field 'kecepatan'
         function updateSpeed(val) {
             const numVal = parseInt(val);
             const isDataValid = !isNaN(numVal) && val !== null && val !== '';
@@ -1603,7 +1603,7 @@
             speedRpmChart.update('none');
         }
 
-        // RPM - dari field 'rp'
+        // RPM - dari field 'rpm_coil'
         function updateRpm(val) {
             const numVal = parseInt(val);
             const isDataValid = !isNaN(numVal) && val !== null && val !== '';
@@ -1645,10 +1645,10 @@
             speedRpmChart.update('none');
         }
 
-        // AFR - dari field 'af'
+        // AFR - dari field 'afr_etanol'
         function updateAfr(val) {
             const numVal = parseFloat(val);
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 10 && numVal <= 20;
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 9 && numVal <= 20;
             
             if (isDataValid) {
                 lastValidAfr = numVal;
@@ -1702,7 +1702,7 @@
             afrChart.update('none');
         }
 
-        // TPS - dari field 'tp'
+        // TPS - dari field 'throttle'
         function updateTps(val) {
             const numVal = parseInt(val);
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0 && numVal <= 100;
@@ -1743,10 +1743,10 @@
             tpsChart.update('none');
         }
 
-        // TEMP - dari field 'su'
+        // TEMP - dari field 'suhu'
         function updateTemp(val) {
             const numVal = parseInt(val);
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= -20 && numVal <= 200;
             
             if (isDataValid) lastValidTemp = numVal;
             let displayValue = lastValidTemp;
@@ -1805,7 +1805,7 @@
             tempChart.update('none');
         }
 
-        // VOLTAGE - dari field 'vb'
+        // VOLTAGE - dari field 'vbat'
         function updateVbat(val) {
             const numVal = parseFloat(val);
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal > 0;
@@ -1870,9 +1870,8 @@
             vbatChart.update('none');
         }
 
-        // ECU STATUS - dari field 'ec' (1=connected, 0=disconnected)
+        // ECU STATUS - dari field 'ecu_connected'
         function updateEcuStatus(val) {
-            // val bisa berupa number 1/0 atau boolean atau string 'connected'
             let isConnected = false;
             if (val === 1 || val === '1' || val === true || val === 'connected') {
                 isConnected = true;
@@ -1915,6 +1914,14 @@
             }
         }
 
+        // ALTITUDE - dari field 'altitude'
+        function updateAltitude(val) {
+            const numVal = parseInt(val);
+            if (!isNaN(numVal)) {
+                document.getElementById('altitudeValue').textContent = numVal;
+            }
+        }
+
         // RUN TIME - dari field 'waktu' {menit, detik}
         function updateRunTime(menit, detik) {
             const timeStr = `${menit}:${detik.toString().padStart(2, '0')}`;
@@ -1927,13 +1934,13 @@
             const tbody = document.getElementById('sensorLog');
             const timeStr = new Date().toLocaleTimeString('id-ID');
 
-            const speed = data.sp ?? lastValidSpeed;
-            const rpm = data.rp ?? lastValidRpm;
-            const afr = data.af != null ? data.af.toFixed(1) : (validAfrReceived ? lastValidAfr.toFixed(1) : '--');
-            const tps = data.tp ?? lastValidTps;
-            const temp = data.su ?? lastValidTemp;
-            const vbat = data.vb != null ? data.vb.toFixed(1) : lastValidVbat.toFixed(1);
-            const ecuStat = (data.ec === 1 || data.ec === '1' || data.ec === true) ? 'CONNECTED' : 'DISCONNECTED';
+            const speed = data.kecepatan ?? lastValidSpeed;
+            const rpm = data.rpm_coil ?? lastValidRpm;
+            const afr = data.afr_etanol != null ? data.afr_etanol.toFixed(1) : (validAfrReceived ? lastValidAfr.toFixed(1) : '--');
+            const tps = data.throttle ?? lastValidTps;
+            const temp = data.suhu ?? lastValidTemp;
+            const vbat = data.vbat != null ? data.vbat.toFixed(1) : lastValidVbat.toFixed(1);
+            const ecuStat = data.ecu_connected ? 'CONNECTED' : 'DISCONNECTED';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -1944,7 +1951,7 @@
                 <td>${tps}%</span></td>
                 <td>${temp}°C</span></td>
                 <td>${vbat} V</span></td>
-                <td style="color:${(data.ec === 1 || data.ec === '1') ? '#00ff88' : '#ff3d3d'};">${ecuStat}</span></td>
+                <td style="color:${data.ecu_connected ? '#00ff88' : '#ff3d3d'};">${ecuStat}</span></td>
             `;
 
             tbody.insertBefore(tr, tbody.firstChild);
@@ -1998,10 +2005,12 @@
                 return;
             }
             
-            // ===== ECU DATA HANDLER (Format ESP32: sp, rp, af, tp, su, vb, ec, waktu, pkt) =====
+            // ===== ECU DATA HANDLER (Format JSON dari ESP32) =====
             if (topic === 'semeru/urban/data') {
                 try {
                     const data = JSON.parse(value);
+                    
+                    console.log('📊 Received data:', data);
                     
                     // Update run time dari field 'waktu'
                     if (data.waktu) {
@@ -2011,18 +2020,19 @@
                     }
                     
                     // Update semua sensor dari ESP32
-                    if (data.sp !== undefined && data.sp !== null) updateSpeed(data.sp);
-                    if (data.rp !== undefined && data.rp !== null) updateRpm(data.rp);
-                    if (data.af !== undefined && data.af !== null) updateAfr(data.af);
-                    if (data.tp !== undefined && data.tp !== null) updateTps(data.tp);
-                    if (data.su !== undefined && data.su !== null) updateTemp(data.su);
-                    if (data.vb !== undefined && data.vb !== null) updateVbat(data.vb);
-                    if (data.ec !== undefined && data.ec !== null) updateEcuStatus(data.ec);
+                    if (data.kecepatan !== undefined && data.kecepatan !== null) updateSpeed(data.kecepatan);
+                    if (data.rpm_coil !== undefined && data.rpm_coil !== null) updateRpm(data.rpm_coil);
+                    if (data.afr_etanol !== undefined && data.afr_etanol !== null) updateAfr(data.afr_etanol);
+                    if (data.throttle !== undefined && data.throttle !== null) updateTps(data.throttle);
+                    if (data.suhu !== undefined && data.suhu !== null) updateTemp(data.suhu);
+                    if (data.vbat !== undefined && data.vbat !== null) updateVbat(data.vbat);
+                    if (data.ecu_connected !== undefined && data.ecu_connected !== null) updateEcuStatus(data.ecu_connected);
                     if (data.pkt !== undefined && data.pkt !== null) updatePacketCounter(data.pkt);
+                    if (data.altitude !== undefined && data.altitude !== null) updateAltitude(data.altitude);
                     
                     updateSensorLog(data);
                 } catch (e) {
-                    console.log('JSON Parse Error:', e);
+                    console.log('JSON Parse Error:', e, 'Raw data:', value);
                 }
                 return;
             }
@@ -2030,7 +2040,7 @@
 
         // ========== INITIALIZE ==========
         initMap();
-        console.log('🚗 Urban Dashboard ready - ESP32 Format (sp, rp, af, tp, su, vb, ec, waktu, pkt)');
+        console.log('🚗 Urban Dashboard ready - Format JSON dari ESP32 (kecepatan, rpm_coil, afr_etanol, throttle, suhu, vbat, ecu_connected, waktu, pkt, altitude)');
     </script>
 </body>
 </html>
