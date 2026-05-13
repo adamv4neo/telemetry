@@ -340,6 +340,7 @@
         .gauge-card.afr-card::before { background: linear-gradient(90deg, var(--red), #ff8844); }
         .gauge-card.temp-card::before { background: linear-gradient(90deg, #ff6622, #ffaa00); }
         .gauge-card.altitude-card::before { background: linear-gradient(90deg, #44ccff, #88ddff); }
+        .gauge-card.vbat-card::before { background: linear-gradient(90deg, #44ffaa, #88ffcc); }
 
         .gauge-label {
             font-size: 10px;
@@ -356,6 +357,7 @@
         .gauge-card.afr-card .gauge-label i { color: var(--red); }
         .gauge-card.temp-card .gauge-label i { color: #ff7722; }
         .gauge-card.altitude-card .gauge-label i { color: #44ccff; }
+        .gauge-card.vbat-card .gauge-label i { color: #44ffaa; }
 
         .gauge-value {
             font-family: 'Orbitron', sans-serif;
@@ -372,6 +374,7 @@
         .gauge-card.tps-card .gauge-value { color: #44ccff; }
         .gauge-card.temp-card .gauge-value { color: #ff9933; }
         .gauge-card.altitude-card .gauge-value { color: #44ccff; }
+        .gauge-card.vbat-card .gauge-value { color: #44ffaa; }
 
         .gauge-unit-row {
             display: flex;
@@ -428,6 +431,7 @@
         .gauge-card.tps-card .gauge-bar-fill { background: linear-gradient(90deg, #0099ff, #44ccff); }
         .gauge-card.temp-card .gauge-bar-fill { background: linear-gradient(90deg, #ff6622, #ffaa00); }
         .gauge-card.altitude-card .gauge-bar-fill { background: linear-gradient(90deg, #44ccff, #88ddff); }
+        .gauge-card.vbat-card .gauge-bar-fill { background: linear-gradient(90deg, #44ffaa, #88ffcc); }
 
         .gauge-value.no-data {
             color: var(--text-muted) !important;
@@ -473,6 +477,7 @@
         .chart-card.tps-chart::before { background: linear-gradient(90deg, #0099ff, transparent); }
         .chart-card.temp-chart::before { background: linear-gradient(90deg, #ff6622, transparent); }
         .chart-card.altitude-chart::before { background: linear-gradient(90deg, #44ccff, transparent); }
+        .chart-card.vbat-chart::before { background: linear-gradient(90deg, #44ffaa, transparent); }
 
         .chart-title {
             font-size: 11px;
@@ -490,6 +495,7 @@
         .chart-card.tps-chart .chart-title i { color: #44ccff; }
         .chart-card.temp-chart .chart-title i { color: #ff9933; }
         .chart-card.altitude-chart .chart-title i { color: #44ccff; }
+        .chart-card.vbat-chart .chart-title i { color: #44ffaa; }
 
         .chart-timeframe {
             font-size: 10px;
@@ -608,6 +614,25 @@
         }
 
         .temp-number-card .number-main-value { color: #ff9933; }
+
+        .vbat-number-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid rgba(68,255,170,0.3);
+            padding: 18px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vbat-number-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #44ffaa, #88ffcc);
+        }
+
+        .vbat-number-card .number-main-value { color: #44ffaa; }
 
         .altitude-number-card {
             background: var(--bg-card);
@@ -964,19 +989,19 @@
                     </div>
                 </div>
 
-                <!-- ALTITUDE -->
-                <div class="gauge-card altitude-card">
+                <!-- VBAT (BATTERY VOLTAGE) -->
+                <div class="gauge-card vbat-card">
                     <div class="gauge-label">
-                        <span>ALTITUDE</span>
-                        <i class="fas fa-mountain"></i>
+                        <span>VOLTAGE</span>
+                        <i class="fas fa-car-battery"></i>
                     </div>
-                    <div class="gauge-value no-data" id="altitudeValue">--</div>
+                    <div class="gauge-value no-data" id="vbatValue">--</div>
                     <div class="gauge-unit-row">
-                        <span class="gauge-unit">meter</span>
-                        <span class="gauge-badge" id="altitudeBadge">MSL</span>
+                        <span class="gauge-unit">Volt</span>
+                        <span class="gauge-badge" id="vbatBadge">--</span>
                     </div>
                     <div class="gauge-bar-track">
-                        <div class="gauge-bar-fill" id="altitudeBar" style="width:0%"></div>
+                        <div class="gauge-bar-fill" id="vbatBar" style="width:0%"></div>
                     </div>
                 </div>
             </div>
@@ -1041,9 +1066,9 @@
                             <div style="font-size:11px;color:var(--text-muted)">menit</div>
                         </div>
                         <div>
-                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">ENGINE LOAD</div>
-                            <div style="font-family:'Orbitron'; font-size:26px; color:#44ccff;" id="engineLoad">--</div>
-                            <div style="font-size:11px;color:var(--text-muted)">%</div>
+                            <div style="font-size:10px;letter-spacing:2px;color:var(--text-muted);">ECU STATUS</div>
+                            <div style="font-family:'Orbitron'; font-size:22px; font-weight:900; color:#44ccff;" id="ecuStatus">--</div>
+                            <div style="font-size:11px;color:var(--text-muted)">Connected</div>
                         </div>
                     </div>
                 </div>
@@ -1079,32 +1104,32 @@
                 </div>
             </div>
 
-            <!-- ALTITUDE SECTION -->
-            <div class="section-label" style="margin-top:20px;"><i class="fas fa-mountain" style="color:#44ccff"></i> ALTITUDE TRACKING</div>
+            <!-- BATTERY VOLTAGE SECTION -->
+            <div class="section-label" style="margin-top:20px;"><i class="fas fa-car-battery" style="color:#44ffaa"></i> BATTERY VOLTAGE</div>
             <div class="temp-row">
-                <!-- Altitude Number Card -->
-                <div class="altitude-number-card" id="altitudeNumberCard">
-                    <div class="number-label" style="color:#44ccff;">
-                        <i class="fas fa-mountain"></i> KETINGGIAN
+                <!-- Voltage Number Card -->
+                <div class="vbat-number-card" id="vbatNumberCard">
+                    <div class="number-label" style="color:#44ffaa;">
+                        <i class="fas fa-car-battery"></i> TEGANGAN AKI
                     </div>
                     <div>
-                        <span class="number-main-value" id="altitudeBigValue" style="color:#44ccff;">--</span>
-                        <span class="temp-unit-big">mdpl</span>
+                        <span class="number-main-value" id="vbatBigValue" style="color:#44ffaa;">--</span>
+                        <span class="temp-unit-big">Volt</span>
                     </div>
-                    <div class="number-status-badge" id="altitudeStatusBadge" style="background:rgba(68,204,255,0.12); color:#44ccff; border-color:rgba(68,204,255,0.25);">
+                    <div class="number-status-badge" id="vbatStatusBadge" style="background:rgba(68,255,170,0.12); color:#44ffaa; border-color:rgba(68,255,170,0.25);">
                         <i class="fas fa-circle" style="font-size:7px;"></i>
                         MENUNGGU DATA
                     </div>
                 </div>
 
-                <!-- Altitude Chart -->
-                <div class="chart-card altitude-chart">
+                <!-- Voltage Chart -->
+                <div class="chart-card vbat-chart">
                     <div class="chart-title">
-                        <span><i class="fas fa-chart-line" style="color:#44ccff"></i> &nbsp; ALTITUDE HISTORY — 30 DETIK TERAKHIR</span>
+                        <span><i class="fas fa-chart-line" style="color:#44ffaa"></i> &nbsp; VOLTAGE HISTORY — 30 DETIK TERAKHIR</span>
                         <span class="chart-timeframe">30s</span>
                     </div>
                     <div style="position:relative; height: 160px;">
-                        <canvas id="altitudeChart"></canvas>
+                        <canvas id="vbatChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -1121,6 +1146,40 @@
                     <div>
                         <span class="sensor-value" id="runTimeSmall">0:00</span>
                         <span class="sensor-unit">menit</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">ECU CONNECTION</div>
+                    <div>
+                        <span class="sensor-value" id="ecuStatusSmall" style="color:#ff3d3d;">OFFLINE</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">PACKET COUNTER</div>
+                    <div>
+                        <span class="sensor-value" id="packetCounter">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sensor-card">
+                <div class="sensor-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="sensor-info">
+                    <div class="sensor-label">ENGINE LOAD</div>
+                    <div>
+                        <span class="sensor-value" id="engineLoad">--</span>
+                        <span class="sensor-unit">%</span>
                     </div>
                 </div>
             </div>
@@ -1146,8 +1205,8 @@
                             <th>AFR (λ)</th>
                             <th>TPS</th>
                             <th>TEMP</th>
-                            <th>ALTITUDE</th>
-                            <th>STATUS</th>
+                            <th>VOLTAGE</th>
+                            <th>ECU STATUS</th>
                         </tr>
                     </thead>
                     <tbody id="sensorLog">
@@ -1158,7 +1217,7 @@
                             <td>-- λ</td>
                             <td>--%</td>
                             <td>--°C</td>
-                            <td>-- m</td>
+                            <td>-- V</td>
                             <td style="color:var(--text-muted);">STANDBY</td>
                         </tr>
                     </tbody>
@@ -1171,7 +1230,7 @@
     <div class="footer">
         <div class="footer-gem"><i class="fas fa-gem"></i></div>
         <div class="footer-title">NO PRESSURE NO DIAMOND</div>
-        <div class="footer-sub">Urban Division · Real-time GPS from Driver's Phone</div>
+        <div class="footer-sub">Urban Division · Real-time Data dari ECU Kendaraan</div>
     </div>
 
     <script>
@@ -1262,7 +1321,9 @@
         let lastValidAfr = 14.7;
         let lastValidTps = 0;
         let lastValidTemp = 0;
-        let lastValidAltitude = 0;
+        let lastValidVbat = 12.0;
+        let lastEcuStatus = false;
+        let lastPacketCounter = 0;
 
         // Flag untuk AFR pertama kali
         let validAfrReceived = false;
@@ -1276,7 +1337,7 @@
         const afrData = new Array(maxDataPoints).fill(null);
         const tpsData = new Array(maxDataPoints).fill(null);
         const tempHistData = new Array(maxDataPoints).fill(null);
-        const altitudeData = new Array(maxDataPoints).fill(null);
+        const vbatData = new Array(maxDataPoints).fill(null);
 
         function shiftPush(arr, val) {
             arr.shift();
@@ -1450,18 +1511,18 @@
             }
         );
 
-        // Altitude Chart
-        const altitudeChart = new Chart(
-            document.getElementById('altitudeChart').getContext('2d'),
+        // Voltage Chart
+        const vbatChart = new Chart(
+            document.getElementById('vbatChart').getContext('2d'),
             {
                 type: 'line',
                 data: {
                     labels: timeLabels,
                     datasets: [{
-                        label: 'Altitude (m)',
-                        data: altitudeData,
-                        borderColor: '#44ccff',
-                        backgroundColor: 'rgba(68,204,255,0.06)',
+                        label: 'Voltage (V)',
+                        data: vbatData,
+                        borderColor: '#44ffaa',
+                        backgroundColor: 'rgba(68,255,170,0.06)',
                         borderWidth: 2,
                         tension: 0.3,
                         pointRadius: 0,
@@ -1476,9 +1537,11 @@
                     scales: {
                         x: { grid: { color: commonGridColor }, ticks: { color: commonTickColor, font: { size: 10 } } },
                         y: { 
-                            grid: { color: 'rgba(68,204,255,0.07)' }, 
-                            ticks: { color: '#44ccff', font: { size: 10 } },
-                            title: { display: true, text: 'meter', color: '#44ccff', font: { size: 10 } }
+                            grid: { color: 'rgba(68,255,170,0.07)' }, 
+                            ticks: { color: '#44ffaa', font: { size: 10 } },
+                            title: { display: true, text: 'Volt', color: '#44ffaa', font: { size: 10 } },
+                            min: 10,
+                            max: 16
                         }
                     }
                 }
@@ -1488,24 +1551,18 @@
         // ========== MAX TRACKERS ==========
         let maxSpeed = 0;
         let maxRpm = 0;
-        let maxAltitude = 0;
 
-        // ========== FUNGSI UPDATE (ANTI-BLINK) ==========
+        // ========== FUNGSI UPDATE (SESUAI FORMAT ESP32: sp, rp, af, tp, su, vb, ec, waktu) ==========
         function setGaugeReady(el) {
             if (el) el.classList.remove('no-data');
         }
 
-        // SPEED
+        // SPEED - dari field 'sp'
         function updateSpeed(val) {
             const numVal = parseInt(val);
-            
-            // CEK: Apakah ini data valid?
             const isDataValid = !isNaN(numVal) && val !== null && val !== '';
             
-            if (isDataValid) {
-                lastValidSpeed = numVal;
-            }
-            
+            if (isDataValid) lastValidSpeed = numVal;
             let displayValue = lastValidSpeed;
             
             const speedEl = document.getElementById('speedValue');
@@ -1546,16 +1603,12 @@
             speedRpmChart.update('none');
         }
 
-        // RPM
+        // RPM - dari field 'rp'
         function updateRpm(val) {
             const numVal = parseInt(val);
-            
             const isDataValid = !isNaN(numVal) && val !== null && val !== '';
             
-            if (isDataValid) {
-                lastValidRpm = numVal;
-            }
-            
+            if (isDataValid) lastValidRpm = numVal;
             let displayValue = lastValidRpm;
             
             const rpmEl = document.getElementById('rpmValue');
@@ -1592,10 +1645,9 @@
             speedRpmChart.update('none');
         }
 
-        // AFR
+        // AFR - dari field 'af'
         function updateAfr(val) {
             const numVal = parseFloat(val);
-            
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 10 && numVal <= 20;
             
             if (isDataValid) {
@@ -1650,16 +1702,12 @@
             afrChart.update('none');
         }
 
-        // TPS
+        // TPS - dari field 'tp'
         function updateTps(val) {
             const numVal = parseInt(val);
-            
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0 && numVal <= 100;
             
-            if (isDataValid) {
-                lastValidTps = numVal;
-            }
-            
+            if (isDataValid) lastValidTps = numVal;
             let displayValue = lastValidTps;
             
             const tpsEl = document.getElementById('tpsValue');
@@ -1671,6 +1719,7 @@
             const tpsBar = document.getElementById('tpsBar');
             if (tpsBar) tpsBar.style.width = displayValue + '%';
 
+            // Engine load estimation dari TPS
             const load = Math.min(100, Math.round(displayValue * 0.8 + 20));
             document.getElementById('engineLoad').textContent = load;
 
@@ -1694,16 +1743,12 @@
             tpsChart.update('none');
         }
 
-        // TEMP
+        // TEMP - dari field 'su'
         function updateTemp(val) {
             const numVal = parseInt(val);
-            
             const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
             
-            if (isDataValid) {
-                lastValidTemp = numVal;
-            }
-            
+            if (isDataValid) lastValidTemp = numVal;
             let displayValue = lastValidTemp;
 
             const tempEl = document.getElementById('tempValue');
@@ -1760,61 +1805,121 @@
             tempChart.update('none');
         }
 
-        // ALTITUDE
-        function updateAltitude(val) {
-            const numVal = parseInt(val);
+        // VOLTAGE - dari field 'vb'
+        function updateVbat(val) {
+            const numVal = parseFloat(val);
+            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal > 0;
             
-            const isDataValid = !isNaN(numVal) && val !== null && val !== '' && numVal >= 0;
+            if (isDataValid) lastValidVbat = numVal;
+            let displayValue = lastValidVbat;
             
-            if (isDataValid) {
-                lastValidAltitude = numVal;
+            const vbatEl = document.getElementById('vbatValue');
+            if (vbatEl) {
+                setGaugeReady(vbatEl);
+                vbatEl.textContent = displayValue.toFixed(1);
             }
             
-            let displayValue = lastValidAltitude;
-            
-            const altEl = document.getElementById('altitudeValue');
-            if (altEl) {
-                setGaugeReady(altEl);
-                altEl.textContent = displayValue;
+            const vbatBar = document.getElementById('vbatBar');
+            if (vbatBar) {
+                const barWidth = Math.min(100, Math.max(0, ((displayValue - 10) / 5) * 100));
+                vbatBar.style.width = barWidth + '%';
             }
             
-            const altBar = document.getElementById('altitudeBar');
-            if (altBar) {
-                const barWidth = Math.min(100, (displayValue / 3000) * 100);
-                altBar.style.width = barWidth + '%';
-            }
+            document.getElementById('vbatBigValue').textContent = displayValue.toFixed(1);
             
-            document.getElementById('altitudeBigValue').textContent = displayValue;
-            
-            if (displayValue > maxAltitude) {
-                maxAltitude = displayValue;
-            }
-            
-            const badge = document.getElementById('altitudeBadge');
-            const statusBadge = document.getElementById('altitudeStatusBadge');
+            const badge = document.getElementById('vbatBadge');
+            const statusBadge = document.getElementById('vbatStatusBadge');
             
             if (badge) {
-                if (displayValue < 500) {
-                    badge.textContent = 'RENDAH';
-                    badge.className = 'gauge-badge';
-                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN RENDAH';
-                } else if (displayValue < 1000) {
-                    badge.textContent = 'SEDANG';
-                    badge.className = 'gauge-badge warn';
-                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> DATARAN TINGGI';
-                } else if (displayValue < 2000) {
-                    badge.textContent = 'TINGGI';
-                    badge.className = 'gauge-badge warn';
-                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> PEGUNUNGAN';
-                } else {
-                    badge.textContent = 'EKSTRIM';
+                if (displayValue < 11.5) {
+                    badge.textContent = 'LOW!';
                     badge.className = 'gauge-badge danger';
-                    if (statusBadge) statusBadge.innerHTML = '<i class="fas fa-skull" style="font-size:7px;"></i> VERY HIGH ALTITUDE';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(255,61,61,0.15)';
+                        statusBadge.style.color = '#ff3d3d';
+                        statusBadge.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size:7px;"></i> BATTERY LOW!';
+                    }
+                } else if (displayValue < 12.5) {
+                    badge.textContent = 'WEAK';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(255,170,0,0.12)';
+                        statusBadge.style.color = '#ffaa00';
+                        statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> BATTERY WEAK';
+                    }
+                } else if (displayValue < 14.5) {
+                    badge.textContent = 'NORMAL';
+                    badge.className = 'gauge-badge';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(68,255,170,0.12)';
+                        statusBadge.style.color = '#44ffaa';
+                        statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> NORMAL VOLTAGE';
+                    }
+                } else {
+                    badge.textContent = 'HIGH';
+                    badge.className = 'gauge-badge warn';
+                    if (statusBadge) {
+                        statusBadge.style.background = 'rgba(255,170,0,0.12)';
+                        statusBadge.style.color = '#ffaa00';
+                        statusBadge.innerHTML = '<i class="fas fa-circle" style="font-size:7px;"></i> HIGH VOLTAGE';
+                    }
                 }
             }
             
-            shiftPush(altitudeData, displayValue);
-            altitudeChart.update('none');
+            shiftPush(vbatData, displayValue);
+            vbatChart.update('none');
+        }
+
+        // ECU STATUS - dari field 'ec' (1=connected, 0=disconnected)
+        function updateEcuStatus(val) {
+            // val bisa berupa number 1/0 atau boolean atau string 'connected'
+            let isConnected = false;
+            if (val === 1 || val === '1' || val === true || val === 'connected') {
+                isConnected = true;
+            } else if (val === 0 || val === '0' || val === false || val === 'disconnected') {
+                isConnected = false;
+            }
+            
+            lastEcuStatus = isConnected;
+            
+            const statusEl = document.getElementById('ecuStatus');
+            const statusSmallEl = document.getElementById('ecuStatusSmall');
+            
+            if (statusEl) {
+                if (lastEcuStatus) {
+                    statusEl.textContent = 'ONLINE';
+                    statusEl.style.color = '#00ff88';
+                } else {
+                    statusEl.textContent = 'OFFLINE';
+                    statusEl.style.color = '#ff3d3d';
+                }
+            }
+            
+            if (statusSmallEl) {
+                if (lastEcuStatus) {
+                    statusSmallEl.textContent = 'ONLINE';
+                    statusSmallEl.style.color = '#00ff88';
+                } else {
+                    statusSmallEl.textContent = 'OFFLINE';
+                    statusSmallEl.style.color = '#ff3d3d';
+                }
+            }
+        }
+
+        // PACKET COUNTER - dari field 'pkt'
+        function updatePacketCounter(val) {
+            const numVal = parseInt(val);
+            if (!isNaN(numVal)) {
+                lastPacketCounter = numVal;
+                document.getElementById('packetCounter').textContent = lastPacketCounter;
+            }
+        }
+
+        // RUN TIME - dari field 'waktu' {menit, detik}
+        function updateRunTime(menit, detik) {
+            const timeStr = `${menit}:${detik.toString().padStart(2, '0')}`;
+            document.getElementById('runTime').textContent = timeStr;
+            document.getElementById('runTimeSmall').textContent = timeStr;
         }
 
         // ========== SENSOR LOG UPDATE ==========
@@ -1822,23 +1927,24 @@
             const tbody = document.getElementById('sensorLog');
             const timeStr = new Date().toLocaleTimeString('id-ID');
 
-            const speed = data.kecepatan ?? lastValidSpeed;
-            const rpm = data.rpm_coil ?? lastValidRpm;
-            const afr = data.afr_etanol != null ? data.afr_etanol.toFixed(1) : (validAfrReceived ? lastValidAfr.toFixed(1) : '--');
-            const tps = data.throttle ?? lastValidTps;
-            const temp = data.suhu ?? lastValidTemp;
-            const alt = data.altitude ?? data.ketinggian ?? lastValidAltitude;
+            const speed = data.sp ?? lastValidSpeed;
+            const rpm = data.rp ?? lastValidRpm;
+            const afr = data.af != null ? data.af.toFixed(1) : (validAfrReceived ? lastValidAfr.toFixed(1) : '--');
+            const tps = data.tp ?? lastValidTps;
+            const temp = data.su ?? lastValidTemp;
+            const vbat = data.vb != null ? data.vb.toFixed(1) : lastValidVbat.toFixed(1);
+            const ecuStat = (data.ec === 1 || data.ec === '1' || data.ec === true) ? 'CONNECTED' : 'DISCONNECTED';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><span style="color:var(--blue);font-family:'Share Tech Mono'">${timeStr}</span></td>
-                <td><span class="value-highlight">${speed}</span> km/h</td>
-                <td>${rpm} RPM</td>
-                <td>${afr} λ</td>
-                <td>${tps}%</td>
-                <td>${temp}°C</td>
-                <td>${alt} m</td>
-                <td style="color:#00ff88;">ACTIVE</td>
+                <td><span class="value-highlight">${speed}</span> km/h</span></td>
+                <td>${rpm} RPM</span></td>
+                <td>${afr} λ</span></td>
+                <td>${tps}%</span></td>
+                <td>${temp}°C</span></td>
+                <td>${vbat} V</span></td>
+                <td style="color:${(data.ec === 1 || data.ec === '1') ? '#00ff88' : '#ff3d3d'};">${ecuStat}</span></td>
             `;
 
             tbody.insertBefore(tr, tbody.firstChild);
@@ -1847,19 +1953,17 @@
             }
         }
 
-        // ========== MQTT HANDLERS (URBAN ONLY) ==========
+        // ========== MQTT HANDLERS ==========
         client.on('connect', () => {
             console.log('✅ Connected to MQTT');
             document.getElementById('statusDot').className = 'dot online';
             document.getElementById('statusText').textContent = 'ONLINE';
 
-            // Subscribe HANYA ke topic urban (tanpa proto)
-            client.subscribe('location/urban/coordinates', err => {
-                if (err) console.error('Subscribe error:', err);
-            });
-            client.subscribe('semeru/urban/#'); // Subscribe ke semua topic urban
+            // Subscribe ke topic GPS dan data urban
+            client.subscribe('location/urban/coordinates');
+            client.subscribe('semeru/urban/data');
             
-            console.log('📡 Subscribed to urban topics only');
+            console.log('📡 Subscribed to urban topics');
         });
 
         client.on('disconnect', () => {
@@ -1871,7 +1975,6 @@
 
         client.on('message', (topic, message) => {
             const value = message.toString();
-
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
             
             // ===== GPS LOCATION HANDLER =====
@@ -1895,54 +1998,39 @@
                 return;
             }
             
-            // ===== SENSOR DATA HANDLER =====
-            // HANYA PROSES DATA LENGKAP (JSON) untuk menghindari blink
+            // ===== ECU DATA HANDLER (Format ESP32: sp, rp, af, tp, su, vb, ec, waktu, pkt) =====
             if (topic === 'semeru/urban/data') {
                 try {
                     const data = JSON.parse(value);
                     
-                    // Update runtime jika ada
+                    // Update run time dari field 'waktu'
                     if (data.waktu) {
-                        const timeStr = `${data.waktu.menit}:${data.waktu.detik.toString().padStart(2, '0')}`;
-                        document.getElementById('runTime').textContent = timeStr;
-                        document.getElementById('runTimeSmall').textContent = timeStr;
+                        const menit = data.waktu.menit || 0;
+                        const detik = data.waktu.detik || 0;
+                        updateRunTime(menit, detik);
                     }
                     
-                    // Update semua field dari SATU SUMBER
-                    if (data.kecepatan !== undefined && data.kecepatan !== null) {
-                        updateSpeed(data.kecepatan);
-                    }
-                    if (data.rpm_coil !== undefined && data.rpm_coil !== null) {
-                        updateRpm(data.rpm_coil);
-                    }
-                    if (data.afr_etanol !== undefined && data.afr_etanol !== null) {
-                        updateAfr(data.afr_etanol);
-                    }
-                    if (data.throttle !== undefined && data.throttle !== null) {
-                        updateTps(data.throttle);
-                    }
-                    if (data.suhu !== undefined && data.suhu !== null) {
-                        updateTemp(data.suhu);
-                    }
-                    if (data.altitude !== undefined && data.altitude !== null) {
-                        updateAltitude(data.altitude);
-                    }
+                    // Update semua sensor dari ESP32
+                    if (data.sp !== undefined && data.sp !== null) updateSpeed(data.sp);
+                    if (data.rp !== undefined && data.rp !== null) updateRpm(data.rp);
+                    if (data.af !== undefined && data.af !== null) updateAfr(data.af);
+                    if (data.tp !== undefined && data.tp !== null) updateTps(data.tp);
+                    if (data.su !== undefined && data.su !== null) updateTemp(data.su);
+                    if (data.vb !== undefined && data.vb !== null) updateVbat(data.vb);
+                    if (data.ec !== undefined && data.ec !== null) updateEcuStatus(data.ec);
+                    if (data.pkt !== undefined && data.pkt !== null) updatePacketCounter(data.pkt);
                     
                     updateSensorLog(data);
                 } catch (e) {
                     console.log('JSON Parse Error:', e);
                 }
-                return; // STOP di sini, jangan proses topic individual
+                return;
             }
-            
-            // ===== IGNORE TOPIC INDIVIDUAL (speed, rpm, dll) =====
-            // Topic individual diabaikan untuk menghindari multiple update
-            // if (topic === 'semeru/urban/speed') ... TIDAK DIPROSES
         });
 
         // ========== INITIALIZE ==========
         initMap();
-        console.log('🚗 Urban Dashboard ready - URBAN ONLY, NO BLINK');
+        console.log('🚗 Urban Dashboard ready - ESP32 Format (sp, rp, af, tp, su, vb, ec, waktu, pkt)');
     </script>
 </body>
 </html>
